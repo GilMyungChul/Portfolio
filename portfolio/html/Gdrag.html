@@ -97,10 +97,10 @@
             $(function(){
                 window.dragone = new drag({
                     targetDrag: $('.Drag.Type-1'),
-                    min: -10,
+                    min: 0,
                     max: 60,
                     // start: '0',
-                    end: 30
+                    // end: 30
                 })
 
                 window.dragtwo = new drag({
@@ -114,10 +114,10 @@
 
                 window.dragthree = new drag({
                     targetDrag: $('.Drag.Type-3'),
-                    min: -1.5,
+                    min: -1,
                     max: 2,
-                    // start: '0',
-                    end: 1.8,
+                    start: 1,
+                    // end: 1.8,
                     interval: 0.2
                 })
             })
