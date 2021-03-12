@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <title>prototype</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+        <meta name="format-detection" content="telephone=no" />
+        <script type="text/javascript" src="../js/jquery-1.12.4.min.js"></script>
+        <script type="text/javascript" src="../js/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="../js/jquery.easing.1.4.1.min.js"></script>
+        <script type="text/javascript" src="../js/jquery.bxslider.js"></script>
+        <script type="text/javascript" src="../js/prototype.js"></script>
+        <link rel="stylesheet" href="../css/reset.css">
+        <link rel="stylesheet" href="../css/prototype.css">        
+    </head>
+    <body>
+        <div class="wrap">
+           <div class="prototype Drag Type-1">
+               <div class="DragBox">
+                    <div class="DragCont">
+                        <div class="pointBox">
+                            <div class="point minPoint"><span class="pointView"></span></div>
+                            <div class="lineBar"><span class="line"></span></div>
+                            <div class="point maxPoint"><span class="pointView"></span></div>
+                        </div>
+                        <div class="defaultBox">
+                            <div class="dfValue dfMin"><span></span></div>
+                            <div class="dfValue dfMax"><span></span></div>
+                        </div>
+                    </div>
+               </div>
+           </div>
+
+            <div class="prototype Drag Type-2">
+                <div class="DragBox">
+                    <div class="DragCont">
+                        <div class="pointBox">
+                            <div class="point minPoint"><span class="pointView"></span></div>
+                            <div class="lineBar"><span class="line"></span></div>
+                            <div class="point maxPoint"><span class="pointView"></span></div>
+                        </div>
+                        <div class="defaultBox">
+                            <div class="dfValue dfMin"><span></span></div>
+                            <div class="dfValue dfMax"><span></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="prototype Drag Type-3">
+                <div class="DragBox">
+                    <div class="DragCont">
+                        <div class="pointBox">
+                            <div class="point minPoint"><span class="pointView"></span></div>
+                            <div class="lineBar"><span class="line"></span></div>
+                            <div class="point maxPoint"><span class="pointView"></span></div>
+                        </div>
+                        <div class="defaultBox">
+                            <div class="dfValue dfMin"><span></span></div>
+                            <div class="dfValue dfMax"><span></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="prototype Drag Type-4">
+                <div class="DragBox">
+                    <div class="DragCont">
+                        <div class="inputBox minBox"><input type="text" class="inputVal" value=""/></div>
+                        <div class="pointBox">
+                            <div class="point minPoint"><span class="pointView"></span></div>
+                            <div class="lineBar"><span class="line"></span></div>
+                            <div class="point maxPoint"><span class="pointView"></span></div>
+                        </div>
+                        <dis class="inputBox maxBox"><input type="text" class="inputVal" value=""/></dis>
+                        <div class="defaultBox">
+                            <div class="dfValue dfMin"><span></span></div>
+                            <div class="dfValue dfMax"><span></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="prototype Drag Type-5">
+                <div class="DragBox">
+                    <div class="DragCont">
+                        <div class="pointBox">
+                            <div class="point minPoint"><span class="pointView"></span></div>
+                            <div class="lineBar"><span class="line"></span></div>
+                            <div class="point maxPoint"><span class="pointView"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function(){
+                window.dragone = new drag({
+                    targetDrag: $('.Drag.Type-1'),
+                    min: -10,
+                    max: 60,
+                    // start: '0',
+                    end: 30
+                })
+
+                window.dragtwo = new drag({
+                    targetDrag: $('.Drag.Type-2'),
+                    min: 100,
+                    max: 200,
+                    start: 110,
+                    end: 180,
+                    interval: 10
+                })
+
+                window.dragthree = new drag({
+                    targetDrag: $('.Drag.Type-3'),
+                    min: -1.5,
+                    max: 2,
+                    // start: '0',
+                    end: 1.8,
+                    interval: 0.2
+                })
+            })
+
+            var dragfour = new drag({
+                targetDrag: $('.Drag.Type-4'),
+                typeOf: 'string',
+                lang: ['1000원', '2000원', '3000원', '4000원', '5000원', '6000원', '7000원' , '8000원', '9000원', '10000원'],
+                userSet: {
+                    userInterface : function() {
+                        this.targetDrag.find('.minBox input').attr('value', this.lang[0]);
+                        this.targetDrag.find('.maxBox input').attr('value', this.lang[this.lang.length - 1]);
+                    },
+
+                    userMoveSet : function(e) {
+                        // console.log(this.obj);
+                        if (this.obj.hasClass('point')) {
+                            if (this.obj.hasClass('minPoint')) {
+                                this.targetDrag.find('.minBox input').attr('value', this.valueX);
+                            } else if (this.obj.hasClass('maxPoint')) {
+                                this.targetDrag.find('.maxBox input').attr('value', this.valueX);
+                            }
+                        } else if (this.obj.hasClass('lineBar')) {
+                            if (this.XX < 50) {
+                                this.targetDrag.find('.minBox input').attr('value', this.valueX);
+                            } else if (this.XX >= 50) {
+                                this.targetDrag.find('.maxBox input').attr('value', this.valueX);
+                            }
+                        }
+                        
+                    }
+                }
+            })
+
+            var dragfive = new drag({
+                targetDrag: $('.Drag.Type-5'),
+                typeOf: 'string',
+                lang: ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'],
+                langPoint: true
+            })
+
+        </script>
+    </body>
+</html>
