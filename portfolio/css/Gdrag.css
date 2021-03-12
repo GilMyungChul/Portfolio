@@ -1,0 +1,24 @@
+.wrap{width:100%;padding:50px;box-sizing:border-box;color:#c56200;}
+.prototype.Drag:first-child{margin:0;}
+.prototype.Drag{width:100%;margin-top:50px;}
+.prototype.Drag .DragBox{padding:10px 20px;position:relative;box-sizing:border-box;}
+.prototype.Drag .DragBox:before{content:'';width:100%;height:4px;position:absolute;left:0;top:50%;margin-top:-2px;background:#e0e0e0;}
+.prototype.Drag .DragCont{padding:12px 0;box-sizing:border-box;position:relative;}
+.prototype.Drag .DragCont .lineBar{width:100%;height:4px;border-radius:3px;position:relative;top:50%;margin-top:-2px;}
+.prototype.Drag .DragCont .lineBar .line{height:4px;background:#ff9100;border-radius:3px;position:absolute;left:0;top:0;z-index:1;}
+.prototype.Drag .DragCont .lineBar .stringObj{width:6px;height:18px;background:#c56200;position:absolute;top:50%;margin-top:-9px;border-radius:5px;margin-left:-3px;}
+.prototype.Drag .DragCont .lineBar .stringObj i{font-size:12px;position:absolute;left:50%;bottom:-18px;text-align:center;font-style:normal;-webkit-transform:translateX(-50%);transform:translateX(-50%);font-weight:bold;}
+.prototype.Drag .DragCont .pointBox{width:100%;height:100%;position:absolute;top:0;left:0;}
+.prototype.Drag .DragCont .pointBox .point{width:20px;height:20px;position:absolute;top:50%;margin-top:-10px;margin-left:-10px;z-index:2;border-radius:10px;background:#ff9100;box-shadow:1px 1px 2px rgba(0, 0, 0, 0.5);}
+.prototype.Drag .DragCont .pointBox .point .pointView{width:50px;position:absolute;left:50%;top:-20px;font-size:12px;text-align:center;-webkit-transform:translateX(-50%);transform:translateX(-50%);font-weight:bold;}
+.prototype.Drag .DragCont .defaultBox .dfValue{width:6px;height:18px;background:#c56200;position:absolute;top:50%;margin-top:-9px;border-radius:5px;margin-left:-3px;}
+.prototype.Drag .DragCont .defaultBox .dfValue.dfMin{left:0%;}
+.prototype.Drag .DragCont .defaultBox .dfValue.dfMax{left:100%;}
+.prototype.Drag .DragCont .defaultBox .dfValue span{width:50px;font-size:12px;position:absolute;left:50%;bottom:-18px;text-align:center;font-style:normal;-webkit-transform:translateX(-50%);transform:translateX(-50%);font-weight:bold;}
+
+.prototype.Drag.Type-4{padding:0 100px;box-sizing:border-box;}
+.prototype.Drag.Type-4 .inputBox{position:absolute;}
+.prototype.Drag.Type-4 .inputBox.minBox{left:-100px;top:50%;-webkit-transform:translateY(-50%);transform:translateY(-50%);}
+.prototype.Drag.Type-4 .inputBox.maxBox{right:-100px;top:50%;-webkit-transform:translateY(-50%);transform:translateY(-50%);}
+.prototype.Drag.Type-4 .inputBox .inputVal{width:80px;outline:none;box-sizing:border-box;padding:5px;border:none;border-radius:5px;font-size:14px;line-height:14px;border:none;color:#c56200;font-weight:bold;text-align:center;}
+.prototype.Drag.Type-4 .inputBox .inputVal:focus{outline:none;}
