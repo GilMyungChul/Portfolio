@@ -29,8 +29,8 @@ function drag (opt) {
     // 숫자 설정 값
     this.min = opt.min;                                     // 최소값 설정
     this.max = opt.max;                                     // 최대값 설정
-    this.start = opt.start || this.min;                     // 시작지점 설정 (이동간격이 '1'인 경우) || default : this.min
-    this.end = opt.end || this.max;                         // 끝지점 설정 (이동간격이 '1'인 경우) || default : this.max
+    this.start = opt.start || this.min;                  // 시작지점 설정 (이동간격이 '1'인 경우) || default : this.min
+    this.end = opt.end || this.max;                      // 끝지점 설정 (이동간격이 '1'인 경우) || default : this.max
     this.interval = opt.interval || 1;                      // 이동간격 || default : 1
 
     // 사용자 지정 function
@@ -88,9 +88,6 @@ function drag (opt) {
 drag.prototype = {
     init : function() {
 
-        this.start = parseInt(this.start);                  // 해당값이 숫자 '0'인 경우 
-        this.end = parseInt(this.end);                      // 해당값이 숫자 '0'인 경우 
-        
         this.typeOfSet();
         this.eventBox();
         this.userInterface();
@@ -125,25 +122,38 @@ drag.prototype = {
                     }
                 }
             } else {
-                for (var i = this.min; i <= this.max; i = i + this.interval) {
-                    this.intervalX.push(i);
+                var isIntegerChk = Number.isInteger(this.interval);
+                console.log(isIntegerChk);
+
+                if (isIntegerChk === true) {
+                    for (var i = this.min; i <= this.max; i = i + this.interval) {
+                        this.intervalX.push(i);
+                    }
+                } else {
+                    for (var i = this.min; i <= this.max; i = i + this.interval) {
+                        this.intervalX.push(i.toFixed(1));
+                    }
                 }
+                
             }
+            
+            // this.max = this.end != 'unfinded' ? this.intervalX[this.intervalX.length - 1] : this.max;
+            // this.min = this.start != 'unfinded' ? this.intervalX[1] : this.min
 
-            this.max = this.end === 'unfinded' ? this.intervalX[this.intervalX.length - 1] : this.max;
-
-            console.log(this.intervalX);
+            console.log(this.intervalX, this.end, this.max);
+            console.log(this.start, this.min);
+            
         }
 
-        this.startX = this.min === this.start ? 0 : (this.start - this.min) / (this.max - this.min) * 100;
-        this.endX = this.max === this.end ? 100 : (this.end - this.min) / (this.max - this.min) * 100;
+        this.startX = this.start != 'unfinded' ? 0 : (this.start - this.min) / (this.max - this.min) * 100;
+        this.endX = this.end != 'unfinded' ? 100 : (this.end - this.min) / (this.max - this.min) * 100;
 
         this.obj.find('.line').css({'left': this.startX + '%', 'right': 100 - this.endX + '%'});
-        this.obj.find('.minPoint').css('left', this.startX + '%').find('.pointView').text(this.start);
-        this.obj.find('.maxPoint').css('left', this.endX + '%').find('.pointView').text(this.end);
+        this.obj.find('.minPoint').css('left', this.startX + '%').find('.pointView').text(this.min);
+        this.obj.find('.maxPoint').css('left', this.endX + '%').find('.pointView').text(this.max);
 
-        this.obj.find('.dfMin span').text(this.start);
-        this.obj.find('.dfMax span').text(this.end);
+        this.obj.find('.dfMin span').text(this.min);
+        this.obj.find('.dfMax span').text(this.max);
     },
 
     stringSet : function() {
