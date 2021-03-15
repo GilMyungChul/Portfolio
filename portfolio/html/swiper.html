@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GilSwiper</title>
+    <link rel="stylesheet" href="../../css/reset.css">
+    <link rel="stylesheet" href="../css/Gswiper.css">
+
+    <script type="text/javascript" src="../../js/jquery-3.2.1.min.js"></script> 
+    <script type="text/javascript" src="../../js/jquery-ui.min.js"></script> 
+    <script type="text/javascript" src="../js/Gswiper.js"></script> 
+</head>
+<body>
+    <div class="wrap">
+        <div class="title"><p>swiper_one</p></div>
+        <div class="swiperWrap">
+            <div class="swiperList swiper_one">
+                <div class="swiperItem"></div>
+                <div class="swiperItem"></div>
+                <div class="swiperItem"></div>
+                <div class="swiperItem"></div>
+                <div class="swiperItem"></div>
+                <div class="swiperItem"></div>
+                <div class="swiperItem"></div>
+            </div>
+            <div class="swiperBtn">
+                <button type="button" class="slideBtn prevBtn">PREV</button>
+                <button type="button" class="slideBtn nextBtn">NEXT</button>
+            </div>
+            <div class="swiperNavi"></div>
+        </div>
+
+        <div class="title"><p>swiper_two</p></div>
+        <div class="swiperWrap">
+            <div class="swiperList swiper_two">
+                <div class="swiperItem"></div>
+                <div class="swiperItem"></div>
+                <div class="swiperItem"></div>
+                <div class="swiperItem"></div>
+                <div class="swiperItem"></div>
+                <div class="swiperItem"></div>
+                <div class="swiperItem"></div>
+                <div class="swiperItem"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var swiper_one = new Gswiper({
+            targetName: $('.swiper_one'),
+            between: 10,
+            startIndex: 3
+        });
+
+        var swiper_two = new Gswiper({
+            targetName: $('.swiper_two'),
+            swiperBtn: 'false',
+            navigator: 'false'
+        });
+    </script>
+</body>
+</html>
