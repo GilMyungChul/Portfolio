@@ -14,49 +14,70 @@
 <body>
     <div class="wrap">
         <div class="title"><p>swiper_one</p></div>
-        <div class="swiperWrap">
-            <div class="swiperList swiper_one">
-                <div class="swiperItem"></div>
-                <div class="swiperItem"></div>
-                <div class="swiperItem"></div>
-                <div class="swiperItem"></div>
-                <div class="swiperItem"></div>
-                <div class="swiperItem"></div>
-                <div class="swiperItem"></div>
+        <div class="swiper-wrap">
+            <div class="swiper-list swiper_one">
+                <div class="slide-item"><span>Slide 01</span></div>
+                <div class="slide-item"><span>Slide 02</span></div>
+                <div class="slide-item"><span>Slide 03</span></div>
+                <div class="slide-item"><span>Slide 04</span></div>
+                <div class="slide-item"><span>Slide 05</span></div>
+                <div class="slide-item"><span>Slide 06</span></div>
+                <div class="slide-item"><span>Slide 07</span></div>
             </div>
-            <div class="swiperBtn">
-                <button type="button" class="slideBtn prevBtn">PREV</button>
-                <button type="button" class="slideBtn nextBtn">NEXT</button>
+            <div class="swiper-btn">
+                <button type="button" class="slide-btn prev-btn">PREV</button>
+                <button type="button" class="slide-btn next-btn">NEXT</button>
             </div>
-            <div class="swiperNavi"></div>
+            <div class="swiper-navi"></div>
         </div>
 
         <div class="title"><p>swiper_two</p></div>
-        <div class="swiperWrap">
-            <div class="swiperList swiper_two">
-                <div class="swiperItem"></div>
-                <div class="swiperItem"></div>
-                <div class="swiperItem"></div>
-                <div class="swiperItem"></div>
-                <div class="swiperItem"></div>
-                <div class="swiperItem"></div>
-                <div class="swiperItem"></div>
-                <div class="swiperItem"></div>
+        <div class="swiper-wrap">
+            <div class="swiper-list swiper_two">
+                <div class="slide-item"><span>Slide 01</span></div>
+                <div class="slide-item"><span>Slide 02</span></div>
+                <div class="slide-item"><span>Slide 03</span></div>
+                <div class="slide-item"><span>Slide 04</span></div>
+                <div class="slide-item"><span>Slide 05</span></div>
+                <div class="slide-item"><span>Slide 06</span></div>
+                <div class="slide-item"><span>Slide 07</span></div>
+                <div class="slide-item"><span>Slide 08</span></div>
             </div>
+        </div>
+
+        <div class="title"><p>swiper_three</p></div>
+        <div class="swiper-wrap vertical">
+            <div class="swiper-list swiper_three">
+                <div class="slide-item"><span>Slide 01</span></div>
+                <div class="slide-item"><span>Slide 02</span></div>
+                <div class="slide-item"><span>Slide 03</span></div>
+                <div class="slide-item"><span>Slide 04</span></div>
+                <div class="slide-item"><span>Slide 05</span></div>
+                <div class="slide-item"><span>Slide 06</span></div>
+                <div class="slide-item"><span>Slide 07</span></div>
+            </div>
+            <div class="swiper-navi"></div>
         </div>
     </div>
 
     <script type="text/javascript">
         var swiper_one = new Gswiper({
             targetName: $('.swiper_one'),
-            between: 10,
-            startIndex: 3
+            between: 5,
+            viewIndex: 3
         });
 
         var swiper_two = new Gswiper({
             targetName: $('.swiper_two'),
-            swiperBtn: 'false',
-            navigator: 'false'
+            between: 5,
+            swiperBtn: false,
+            navigator: false
+        });
+
+        var swiper_three = new Gswiper({
+            targetName: $('.swiper_three'),
+            mode: 'vertical',
+            swiperBtn: false,
         });
     </script>
 </body>
