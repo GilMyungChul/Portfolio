@@ -12,8 +12,7 @@
     <script type="text/javascript" src="../js/Gswiper.js"></script> 
 </head>
 <body>
-    <div class="wrap">
-        <div class="title"><p>swiper_one</p></div>
+    <div class="title"><p>swiper_one</p></div>
         <div class="swiper-wrap">
             <div class="swiper-list swiper_one">
                 <div class="slide-item"><span>Slide 01</span></div>
@@ -25,10 +24,10 @@
                 <div class="slide-item"><span>Slide 07</span></div>
             </div>
             <div class="swiper-btn">
-                <button type="button" class="slide-btn prev-btn">PREV</button>
-                <button type="button" class="slide-btn next-btn">NEXT</button>
+                <button type="button" class="slide-btn prev-btn">◀</button>
+                <button type="button" class="slide-btn next-btn">▶</button>
             </div>
-            <div class="swiper-navi"></div>
+            <div class="swiper-indicator"></div>
         </div>
 
         <div class="title"><p>swiper_two</p></div>
@@ -43,6 +42,10 @@
                 <div class="slide-item"><span>Slide 07</span></div>
                 <div class="slide-item"><span>Slide 08</span></div>
             </div>
+            <div class="swiper-btn">
+                <button type="button" class="slide-btn prev-btn">◀</button>
+                <button type="button" class="slide-btn next-btn">▶</button>
+            </div>
         </div>
 
         <div class="title"><p>swiper_three</p></div>
@@ -56,7 +59,7 @@
                 <div class="slide-item"><span>Slide 06</span></div>
                 <div class="slide-item"><span>Slide 07</span></div>
             </div>
-            <div class="swiper-navi"></div>
+            <div class="swiper-indicator"></div>
         </div>
     </div>
 
@@ -70,15 +73,15 @@
 
         var swiper_two = new Gswiper({
             targetName: $('.swiper_two'),
-            between: 5,
-            slideBtn: false,
-            navigator: false
+            viewIndex: 5,
+            indicator: false
         });
 
         var swiper_three = new Gswiper({
             targetName: $('.swiper_three'),
             mode: 'vertical',
             slideBtn: false,
+            indicatorType: 'number'
         });
     </script>
 </body>
