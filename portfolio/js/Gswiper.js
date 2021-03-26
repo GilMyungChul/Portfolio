@@ -6,30 +6,14 @@
       - swiper slide 플러그인 제작
     * 2021-03-17
       - drag, click, navi 이벤트 슬라이드 적용
+    * 2021-03-24
+      - 'transitionend webkitTransitionEnd' 슬라이드 감지 이벤트 추가
+    * 2021-03-26
+      - drag, click, navi 이벤트 value값 정리 및 적용  
+      
 ***/
 
 function Gswiper (opt) {
-    
-    this.targetName = opt.targetName;                               // swiper target
-    this.mode = opt.mode || 'horizontal';                           // 모드 : 'horizontal' (default), 'vertical', 'scroll'
-    this.slideBtn = opt.slideBtn || true;                           // 슬라이드 버튼 : 'true' (default), 'false'
-    this.indicator = opt.indicator || true;                         // 네비게이션 : 'true' (default), 'false'
-    this.indicatorList = opt.indicatorList || 'dot'                 // 인디케이터 종류 : 'dot' (default), 'number', 'bar'
-    this.between = opt.between || 0;                                // 슬라이드 간 간격
-    this.viewIndex = opt.viewIndex || 0;                            // 슬라이드 시작되는 시점 : 0 (default)
-    this.slideWidth = opt.slideWidth || false;                      // 슬라이드 width
-    this.slideHeight = opt.slideHeight || false;                    // 슬라이드 height
-    this.loop = opt.loop || false;                                  // 무한 스와이퍼 : false (default)
-    this.slideSpeed = opt.slideSpeed || '1s';                       // 슬라이드 스피드 : 1s (default)
-    this.slideEffect = opt.slideEffect || 'ease'                    // 슬라이드 이펙트 : ease (default)
-    
-    this.swiperWrapper = this.targetName.parents('.swiper-wrap');
-    this.slideItem = this.targetName.find('.slide-item');
-
-    this.prevBtn;
-    this.nextBtn;
-    
-    this.naviItem;
 
     this.pageXY = function(e) {
         var pageX = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageX : e.originalEvent.pageX;
@@ -38,6 +22,28 @@ function Gswiper (opt) {
 
         return pageXY;
     };
+    
+    this.targetName = opt.targetName;                                                                                                               // swiper target
+    this.mode = opt.mode || 'horizontal';                                                                                                           // 모드 : 'horizontal' (default), 'vertical', 'scroll'
+    this.slideBtn = opt.slideBtn == '' ? false : true;                                                                                              // 슬라이드 버튼 : 'true' (default), 'false'
+    this.indicator = opt.indicator == '' ? false : true;                                                                                            // 인디케이터 : 'true' (default), 'false'
+    this.indicatorType = this.indicator === true ? ($.type(opt.indicatorType) == 'undefined' ? 'dot' : opt.indicatorType) : false                   // 인디케이터 종류 : 'dot' (default), 'number', 'bar'
+    this.between = opt.between || 0;                                                                                                                // 슬라이드 간 간격
+    this.viewIndex = opt.viewIndex || 0;                                                                                                            // 슬라이드 시작되는 시점 : 0 (default)
+    this.slideWidth = opt.slideWidth || false;                                                                                                      // 슬라이드 width
+    this.slideHeight = opt.slideHeight || false;                                                                                                    // 슬라이드 height
+    this.loop = opt.loop || false;                                                                                                                  // 무한 스와이퍼 : false (default)
+    this.slideSpeed = opt.slideSpeed || '1s';                                                                                                       // 슬라이드 스피드 : 1s (default)
+    this.slideEffect = opt.slideEffect || 'ease'                                                                                                    // 슬라이드 이펙트 : ease (default)
+    
+    this.swiperWrapper = this.targetName.parents('.swiper-wrap');
+    this.slideItem = this.targetName.find('.slide-item');
+
+    this.prevBtn;
+    this.nextBtn;
+    
+    this.indicatorItem;
+    
     this.pageX;
     this.pageY;
 
@@ -48,6 +54,7 @@ function Gswiper (opt) {
     this.slideHeight = this.slideHeight === false ? parseInt(this.swiperWrapper.innerHeight()) : this.slideHeight;
     
     this.slideLength = this.targetName[0].childElementCount;
+    this.cloneLength;
 
     this.offsetLeft = this.swiperWrapper.offset().left;
     this.offsetTop = this.swiperWrapper.offset().top;
@@ -70,12 +77,16 @@ function Gswiper (opt) {
     this.eventMoveChk = false;
     this.eventClickChk = false;
     this.eventMouseUpChk = false;
+    this.transitionIng = false;
 
     this.init();
 }
 
 Gswiper.prototype = {
     init : function() {
+        
+        // 적용된 슬라이드에 부모요소 추가
+        this.targetName.wrap('<div class="swiper-cont"></div>');
 
         // 기본 세팅 (슬라이드, 버튼, 네비게이션)
         this.defaultset();
@@ -85,19 +96,19 @@ Gswiper.prototype = {
 
         // 이벤트 적용 목록
         this.eventList();
+
     },
 
     // 기본 HTML 세팅
     defaultset : function() {
-
-        this.targetName.wrap('<div class="swiper-cont"></div>');
+        
         this.swiperWrapper.find('.swiper-cont').css({'width': this.slideWidth, 'height': this.slideHeight});
 
         // 슬라이드 아이템 세팅
         this.slideItemSet();
 
-        // 슬라이드 네비게이션 세팅
-        if (this.indicator === true) {this.slideNaviSet();};
+        // 슬라이드 인디케이터 세팅
+        if (this.indicator === true) {this.slideIndicatorSet();};
 
         // 슬라이드 버튼
         if (this.slideBtn === true) {this.slideBtnSet();};
@@ -110,10 +121,12 @@ Gswiper.prototype = {
             this.slideItem.eq(i).attr('slide-data', i);
         }
 
-        var firstClone = this.slideItem.eq(this.slideLength - 1).clone().addClass('clone').attr({'data-clone': this.slideLength - 1, 'slide-data': -1});
-        var lastClone = this.slideItem.eq(0).clone().addClass('clone').attr({'data-clone': 0, 'slide-data': this.slideLength});
-        lastClone.appendTo(this.targetName);
-        firstClone.prependTo(this.targetName);
+        if (this.loop === true) {
+            var firstClone = this.slideItem.eq(this.slideLength - 1).clone().addClass('clone').attr({'data-clone': this.slideLength - 1, 'slide-data': -1});
+            var lastClone = this.slideItem.eq(0).clone().addClass('clone').attr({'data-clone': 0, 'slide-data': this.slideLength});
+            lastClone.appendTo(this.targetName);
+            firstClone.prependTo(this.targetName);
+        }
 
         // 활성화 아이템 클래스 추가
         this.slideItem.eq(this.viewIndex).addClass('active');
@@ -121,29 +134,42 @@ Gswiper.prototype = {
 
     // 슬라이드 버튼 세팅
     slideBtnSet : function() {
-        this.slideBtn = this.swiperWrapper.find('.slide-btn');
         this.prevBtn = this.swiperWrapper.find('.prev-btn');
         this.nextBtn = this.swiperWrapper.find('.next-btn');
     },
 
-    // 슬라이드 네비게이션 세팅
-    slideNaviSet : function() {
-        this.targetName.parents('.swiper-wrap').find('.swiper-indicator').append('<ul class="navi-list"></ul>');
+    // 슬라이드 인디케이터 세팅
+    slideIndicatorSet : function() {
+
+        this.targetName.parents('.swiper-wrap').find('.swiper-indicator').append('<ul class="indicator-list"></ul>');
 
         for (var i = 0; i <= this.slideLength - 1; i++) {
-            this.naviItem = '<li class="navi-items" navi-data="' + i + '">' + (i + 1) + '</li>';
-            this.targetName.parents('.swiper-wrap').find('.navi-list').append(this.naviItem);
+            this.indicatorItem = '<li class="indicator-items" indicator-data="' + i + '">' + (i + 1) + '</li>';
+            this.targetName.parents('.swiper-wrap').find('.indicator-list').append(this.indicatorItem);
         }
 
-        // 활성화 네비게이션 클래스 추가
-        this.swiperWrapper.find('.navi-items').eq(this.viewIndex).addClass('active');
+        // 활성화 인디케이터 클래스 추가
+        this.swiperWrapper.find('.indicator-items').eq(this.viewIndex).addClass('active');
 
-        this.naviItem = this.swiperWrapper.find('.navi-items');
+        this.indicatorItem = this.swiperWrapper.find('.indicator-items');
     },
 
     // 모드 세팅
     modeSet : function() {
-        this.moveX = this.between != 0 ? (this.viewIndex != 0 ? - (this.slideWidth * this.viewIndex + (this.between * 2) * this.viewIndex + this.between + this.slideWidth) : - this.between - this.slideWidth) : 0;
+        var viewIndex = this.viewIndex > 0 ? this.viewIndex - 1 : 0;
+        this.cloneLength = this.loop === true ? 1 : 0;
+
+        // console.log(this.viewIndex , this.cloneLength, this.between)
+
+        this.moveX = - this.slideWidth * (this.cloneLength + viewIndex) - this.between * 2 * (viewIndex + this.cloneLength);
+        this.moveY = - this.slideHeight * (this.cloneLength + viewIndex) - this.between * 2 * (viewIndex + this.cloneLength);
+        
+        this.cloneLength = $(this.targetName).find('.clone').length;
+
+        this.slideItem.removeClass('active').not('.clone').eq(viewIndex).addClass('active');
+        if (this.indicator === true) {
+            this.indicatorItem.removeClass('active').eq(viewIndex).addClass('active');
+        }
 
         if (this.mode === 'horizontal') {
             this.horizontalSet();
@@ -156,17 +182,15 @@ Gswiper.prototype = {
 
     // horizontal slide 세팅
     horizontalSet : function() {
-        var cloneLength = $(this.targetName).find('.clone').length;
         this.slideItem.css({'margin-left': this.between + 'px', 'margin-right': this.between + 'px'});
-        this.targetName.css({'width': (this.slideWidth * (this.slideLength + cloneLength)) + (this.between * 2 * (this.slideLength + cloneLength)) + 'px' , 'height': this.slideHeight + 'px'});
+        this.targetName.css({'width': (this.slideWidth * (this.slideLength + this.cloneLength)) + (this.between * 2 * (this.slideLength + this.cloneLength)) + 'px' , 'height': this.slideHeight + 'px'});
         this.targetName.css('left', this.moveX + 'px');
     },
 
     verticalSet : function() {
-        var cloneLength = $(this.targetName).find('.clone').length;
         this.slideItem.css({'margin-top': this.between + 'px', 'margin-bottom': this.between + 'px'});
-        this.targetName.css({'width': this.slideWidth + 'px' , 'height': (this.slideHeight * (this.slideLength + cloneLength)) + (this.between * 2 * (this.slideLength + cloneLength)) + 'px'});
-        this.targetName.css('top', this.moveX + 'px');
+        this.targetName.css({'width': this.slideWidth + 'px' , 'height': (this.slideHeight * (this.slideLength + this.cloneLength)) + (this.between * 2 * (this.slideLength + this.cloneLength)) + 'px'});
+        this.targetName.css('top', this.moveY + 'px');
     },
 
     eventList : function() {
@@ -182,17 +206,18 @@ Gswiper.prototype = {
             .on('mouseup', _this, function(e){_this.eventUp(e)})
             .on('touchend', _this, function(e){_this.eventUp(e)});
             
-        $(_this.slideBtn)
-            .on('click', _this, _this.btnClick);
-            
-        $(_this.naviItem)
-            .on('click', _this, _this.naviClick);
+        if (_this.slideBtn === true) {
+            _this.nextBtn.on('click', _this, _this.nextBtnClick);
+            _this.prevBtn.on('click', _this, _this.prevBtnClick);
+        }
+
+        if (_this.indicator === true) {$(_this.indicatorItem).on('click', _this, _this.naviClick);}
     },
 
     // 마우스, 터치 다운
     eventDown : function(e) {
         var _this = e.data;
-        _this.eventMoveChk = true;
+        
         _this.eventMouseUpChk = false;
         _this.startEventValue(e);
     },
@@ -200,64 +225,70 @@ Gswiper.prototype = {
     // 마우스, 터치 무브
     eventMove : function(e) {
         var _this = e.data;
-        if (_this.eventMoveChk === true) {
-            _this.pageDragValue(e);
-        }
+        if (_this.eventMoveChk === true) {_this.pageDragValue(e);}
     },
 
     // 마우스, 터치 업
     eventUp : function(e) {
         var _this = e.data;
-        _this.eventMoveChk = false;
+
         _this.eventMouseUpChk = true;
+        if (_this.eventMouseUpChk === true) {_this.eventMouseUpValue(e);};
+
         _this.endEventValue(e);
     },
 
-    btnClick : function(e) {
+    nextBtnClick : function(e) {
         var _this = e.data;
-        _this.eventClickChk = true;
-        _this.slideBtn = $(this);
-        _this.startEventValue(e);
         
-        if (_this.eventClickChk === true) {
-            _this.btnClickValue(e);
-        };
-
+        _this.nextBtn = $(this);
+        _this.startEventValue(e);
+        if (_this.eventClickChk === true) {_this.nextBtnValue(e);}
         _this.endEventValue(e);
-        _this.eventClickChk = false;
+    },
+
+    prevBtnClick : function(e) {
+        var _this = e.data;
+        
+        _this.prevBtn = $(this);
+        _this.startEventValue(e);
+        if (_this.eventClickChk === true) {_this.prevBtnValue(e);}
+        _this.endEventValue(e);
     },
 
     naviClick : function(e) {
         var _this = e.data;
-        _this.eventClickChk = true;
 
-        _this.startEventValue(e);
         _this.curNavi = parseInt($(this).index());
-
-        if (_this.eventClickChk === true) {
-            _this.naviClickValue(e);
-        };
-
+        _this.startEventValue(e);
+        if (_this.eventClickChk === true) {_this.naviClickValue(e);};
         _this.endEventValue(e);
-        _this.eventClickChk = false;
     },
 
+    // 슬라이드 시작
     startEventValue : function(e) {
         var _this = e.data;
+
+        _this.eventMoveChk = true;
+        _this.eventClickChk = true;
+        _this.transitionIng = true;
+        
         _this.objectDataValue(e);
     },
 
+    // 슬라이드 중간
     moveEventValue : function(e) {
         var _this = e.data;
     },
 
+    // 슬라이드 끝
     endEventValue : function(e) {
         var _this = e.data;
-        // _this.objectDataValue(e);
-        _this.eventLoopCheck(e);
-        _this.activeClassValue(e);
 
-        if (_this.eventMouseUpChk === true) {_this.eventMouseUpValue(e);};
+        _this.eventMoveChk = false;
+        _this.eventClickChk = false;
+
+        _this.eventLoopCheck(e);
     },
 
     // 슬라이드 데어터 값
@@ -266,11 +297,12 @@ Gswiper.prototype = {
         _this.pageX = _this.pageXY(e)[0];
         _this.pageY = _this.pageXY(e)[1];
 
-        _this.curSlide = parseInt(_this.targetName.find('.slide-item.active').attr('slide-data'));
-        _this.curNavi = parseInt(_this.swiperWrapper.find('.navi-items.active').attr('navi-data'));
         _this.curX = parseInt(_this.targetName[0].style.left);
-        _this.prevIndex = _this.curSlide - 1;
-        _this.nextIndex = _this.curSlide + 1;
+
+        _this.prevIndex = _this.viewIndex - 1;
+        _this.nextIndex = _this.viewIndex + 1;
+
+        console.log(_this.prevIndex , _this.viewIndex , _this.nextIndex)
     },
 
     // 드래그의 50%로 넘어가지 않으면 다시 슬라이드 제자리로 설정
@@ -279,7 +311,8 @@ Gswiper.prototype = {
         
         if ( _this.pageXY(e)[0] - _this.offsetLeft > (_this.pageX - _this.offsetLeft) * 0.6 && _this.pageXY(e)[0] - _this.offsetLeft < (_this.pageX - _this.offsetLeft) / 0.6 ) {
             console.log('30% 넘지 않았다');
-            _this.moveX = -(_this.slideWidth * _this.curIndex) - (_this.between * _this.curIndex * 2) - _this.slideWidth;
+            console.log(_this.curIndex, _this.curX);
+            _this.moveX = _this.curX;
             _this.targetName.css('left', _this.moveX);
             _this.targetName[0].style.transitionDuration = '0.5s';
         } 
@@ -289,30 +322,40 @@ Gswiper.prototype = {
     // 무한루프 값에 따른 설정 값
     eventLoopCheck : function(e) {
         var _this = e.data;
-        _this.objectDataValue(e);
+        
+        $(_this.targetName).on("transitionend webkitTransitionEnd", _this, function(e) {
+            _this.transitionIng = false;
+            $(_this.targetName).off("transitionend webkitTransitionEnd");
 
-        if (_this.loop === true) {
-            console.log(_this.curIndex)
-            if (_this.curIndex == -1) {
-                _this.moveX = -(_this.slideWidth * _this.lastIndex) - (_this.between * _this.lastIndex * 2) - _this.slideWidth;
-                _this.transition_Duration = '0s';
-                _this.curIndex = _this.lastIndex;
-            } else if (_this.curIndex == _this.slideLength) {
-                _this.moveX = -(_this.slideWidth * _this.firstIndex) - (_this.between * _this.firstIndex * 2) - _this.slideWidth;
-                _this.transition_Duration = '0s';
-                _this.curIndex = _this.firstIndex;
-            }
-        } else if (_this.loop === false) {
-            if (_this.curIndex <= _this.firstIndex) {
-                _this.moveX = -(_this.slideWidth * _this.firstIndex) - (_this.between * _this.firstIndex * 2) - _this.slideWidth;
-                _this.curIndex = _this.firstIndex;
-            } else if (_this.curIndex >= _this.lastIndex) {
-                _this.moveX = -(_this.slideWidth * _this.lastIndex) - (_this.between * _this.lastIndex * 2) - _this.slideWidth;
-                _this.curIndex = _this.lastIndex;
-            }
-        }
+            if (_this.loop === true) {
+                if (_this.curIndex == -1) {
+                    _this.moveX = -(_this.slideWidth * _this.lastIndex) - (_this.between * _this.lastIndex * 2) - _this.slideWidth;
+                    _this.transition_Duration = '0s';
+                    _this.curIndex = _this.lastIndex;
+                    _this.activeClassValue(e);
+                } else if (_this.curIndex == _this.slideLength) {
+                    _this.moveX = -(_this.slideWidth * _this.firstIndex) - (_this.between * _this.firstIndex * 2) - _this.slideWidth;
+                    _this.transition_Duration = '0s';
+                    _this.curIndex = _this.firstIndex;
+                    _this.activeClassValue(e);
+                }
+            } 
 
-        _this.slideMoveValue(e);
+            if (_this.loop === false) {
+                console.log(_this.curIndex);
+                if (_this.curIndex <= _this.firstIndex) {
+                    _this.moveX = -(_this.slideWidth * _this.firstIndex) - (_this.between * _this.firstIndex * 2) - _this.slideWidth;
+                    _this.curIndex = _this.firstIndex;
+                    _this.activeClassValue(e);
+                } else if (_this.curIndex >= _this.lastIndex) {
+                    _this.moveX = -(_this.slideWidth * _this.lastIndex) - (_this.between * _this.lastIndex * 2) - _this.slideWidth;
+                    _this.curIndex = _this.lastIndex;
+                    _this.activeClassValue(e);
+                }
+            }
+
+            _this.slideMoveValue(e);
+        })
     },
 
     // 드래그시, 필요한 값 세팅
@@ -335,11 +378,13 @@ Gswiper.prototype = {
         if (_this.pageXY(e)[0] - _this.offsetLeft < (_this.pageX - _this.offsetLeft) * 0.6) {
             _this.transition_Duration = _this.slideSpeed;
             _this.moveX = _this.curX - _this.slideWidth - (_this.between * 2);
-            _this.curIndex = _this.nextIndex;
+            _this.curIndex = _this.nextIndex - 1;
+
+            _this.viewIndex = _this.nextIndex;
         } else {
             _this.transition_Duration = '0s';
             _this.moveX = _this.curX - ((_this.pageX - _this.offsetLeft) - (_this.pageXY(e)[0] - _this.offsetLeft));
-            _this.curIndex = _this.curSlide;
+            _this.curIndex = _this.viewIndex - 1;
         }
     },
 
@@ -349,35 +394,52 @@ Gswiper.prototype = {
         if ( _this.pageXY(e)[0] - _this.offsetLeft > (_this.pageX - _this.offsetLeft) / 0.6) {
             _this.transition_Duration = _this.slideSpeed;
             _this.moveX = _this.curX + _this.slideWidth + (_this.between * 2);
-            _this.curIndex = _this.prevIndex;
+            _this.curIndex = _this.prevIndex - 1;
+
+            _this.viewIndex = _this.prevIndex
         } else {
             _this.transition_Duration = '0s';
             _this.moveX = _this.curX + ((_this.pageXY(e)[0] - _this.offsetLeft) - (_this.pageX - _this.offsetLeft));
-            _this.curIndex = _this.curSlide;
+            _this.curIndex = _this.viewIndex - 1;
         }
     },
 
-    // 버튼 클릭시, 필요한 값 세팅
-    btnClickValue : function(e) {
+    nextBtnValue : function(e) {
         var _this = e.data;
-        console.log($('this .next-btn'))
-        _this.moveX = _this.slideBtn[0].className == 'slide-btn next-btn' ? _this.curX - _this.slideWidth - (_this.between * 2) : _this.curX + _this.slideWidth + (_this.between * 2);
-        _this.curIndex = _this.slideBtn[0].className == 'slide-btn next-btn' ? _this.nextIndex : _this.prevIndex;
+
+        _this.moveX = _this.curX - _this.slideWidth - (_this.between * 2);
+        _this.curIndex = _this.nextIndex - 1;
+        _this.transition_Duration = _this.slideSpeed;
+        
+        _this.slideMoveValue(e);
+
+        _this.viewIndex = _this.nextIndex;
+    },
+
+    prevBtnValue : function(e) {
+        var _this = e.data;
+
+        _this.moveX = _this.curX + _this.slideWidth + (_this.between * 2);
+        _this.curIndex = _this.prevIndex - 1;
+        _this.transition_Duration = _this.slideSpeed;
 
         _this.slideMoveValue(e);
+
+        _this.viewIndex = _this.prevIndex;
     },
 
     // 네비게이션 클릭시, 필요한 값 세팅
     naviClickValue : function(e) {
         var _this = e.data;
+        var cloneLength = _this.cloneLength - 1;
 
-        _this.moveX = _this.curSlide < _this.curNavi ? 
-            _this.curX - _this.slideWidth * (_this.curNavi - _this.curSlide) - (_this.between * 2 * (_this.curNavi - _this.curSlide)) : 
-            _this.curX + _this.slideWidth * (_this.curSlide - _this.curNavi) + (_this.between * 2 * (_this.curSlide - _this.curNavi));
-
+        _this.moveX = - (_this.slideWidth * _this.curNavi) - (_this.between * 2 * _this.curNavi) - (_this.slideWidth * cloneLength);
+        _this.transition_Duration = _this.slideSpeed;
         _this.curIndex = _this.curNavi;
 
         _this.slideMoveValue(e);
+
+        _this.viewIndex = _this.curIndex + 1;
     },
 
     // 드래그, 버튼, 네비게이션 값을 받아 슬라이드 동작
@@ -387,13 +449,16 @@ Gswiper.prototype = {
         _this.targetName.css('left', _this.moveX + 'px');
         _this.targetName[0].style.transitionProperty = _this.transition_Property;
         _this.targetName[0].style.transitionDuration = _this.transition_Duration;
+        _this.activeClassValue(e);
     },
 
     activeClassValue : function(e) {
         var _this = e.data;
-
+        
         _this.slideItem.removeClass('active').not('.clone').eq(_this.curIndex).addClass('active');
-        _this.naviItem.removeClass('active').eq(_this.curIndex).addClass('active');
+        if (_this.indicator === true) {
+            _this.indicatorItem.removeClass('active').eq(_this.curIndex).addClass('active');
+        }
 
     }
 
