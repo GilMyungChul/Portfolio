@@ -12,7 +12,8 @@
     <script type="text/javascript" src="../js/Gswiper.js"></script> 
 </head>
 <body>
-    <div class="title"><p>swiper_one</p></div>
+    <div class="wrap">
+        <div class="title"><p>swiper_horizontal = indicatorType : 'dot'</p></div>
         <div class="swiper-wrap">
             <div class="swiper-list swiper_one">
                 <div class="slide-item"><span>Slide 01</span></div>
@@ -30,7 +31,7 @@
             <div class="swiper-indicator"></div>
         </div>
 
-        <div class="title"><p>swiper_two</p></div>
+        <div class="title"><p>swiper_horizontal = indicatorType : 'number'</p></div>
         <div class="swiper-wrap">
             <div class="swiper-list swiper_two">
                 <div class="slide-item"><span>Slide 01</span></div>
@@ -46,10 +47,11 @@
                 <button type="button" class="slide-btn prev-btn">◀</button>
                 <button type="button" class="slide-btn next-btn">▶</button>
             </div>
+            <div class="swiper-indicator"></div>
         </div>
 
-        <div class="title"><p>swiper_three</p></div>
-        <div class="swiper-wrap vertical">
+        <div class="title"><p>swiper_horizontal = indicatorType : 'bar' , slideBtn : false </p></div>
+        <div class="swiper-wrap">
             <div class="swiper-list swiper_three">
                 <div class="slide-item"><span>Slide 01</span></div>
                 <div class="slide-item"><span>Slide 02</span></div>
@@ -58,6 +60,31 @@
                 <div class="slide-item"><span>Slide 05</span></div>
                 <div class="slide-item"><span>Slide 06</span></div>
                 <div class="slide-item"><span>Slide 07</span></div>
+                <div class="slide-item"><span>Slide 08</span></div>
+                <div class="slide-item"><span>Slide 09</span></div>
+                <div class="slide-item"><span>Slide 10</span></div>
+            </div>
+            <div class="swiper-btn">
+                <button type="button" class="slide-btn prev-btn">◀</button>
+                <button type="button" class="slide-btn next-btn">▶</button>
+            </div>
+            <div class="swiper-indicator"></div>
+        </div>
+
+        <div class="title"><p>swiper_vertical</p></div>
+        <div class="swiper-wrap vertical">
+            <div class="swiper-list swiper_four">
+                <div class="slide-item"><span>Slide 01</span></div>
+                <div class="slide-item"><span>Slide 02</span></div>
+                <div class="slide-item"><span>Slide 03</span></div>
+                <div class="slide-item"><span>Slide 04</span></div>
+                <div class="slide-item"><span>Slide 05</span></div>
+                <div class="slide-item"><span>Slide 06</span></div>
+                <div class="slide-item"><span>Slide 07</span></div>
+            </div>
+            <div class="swiper-btn">
+                <button type="button" class="slide-btn prev-btn">▲</button>
+                <button type="button" class="slide-btn next-btn">▼</button>
             </div>
             <div class="swiper-indicator"></div>
         </div>
@@ -68,20 +95,34 @@
             targetName: $('.swiper_one'),
             between: 5,
             viewIndex: 3,
-            loop: true
+            loop: true,
+            ingSlideNot: true
         });
 
         var swiper_two = new Gswiper({
             targetName: $('.swiper_two'),
-            viewIndex: 5,
-            indicator: false
+            // viewIndex: 5,
+            slideWidth: 500,
+            indicatorType: 'number'
         });
 
         var swiper_three = new Gswiper({
             targetName: $('.swiper_three'),
+            between: 10,
+            viewIndex: 2,
+            loop: true,
+            indicatorType: 'bar'
+        });
+
+        var swiper_four = new Gswiper({
+            targetName: $('.swiper_four'),
+            slideHeight: 350,
+            between: 10,
+            loop: true,
             mode: 'vertical',
-            slideBtn: false,
             indicatorType: 'number'
+            // slideBtn: false
+            // indicatorType: 'number'
         });
     </script>
 </body>
