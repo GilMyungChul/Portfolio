@@ -1,13 +1,18 @@
 'use strict'
 
-/*** 드래그 플러그인 제작
+/*** 스와이퍼 플러그인 제작
   ====================== ver 0.0 ======================
     * 2021-03-12 
       - swiper slide 플러그인 제작
   ====================== ver 1.0 ======================
     * 2021-03-31
       - 'horizontal', 'vertical' 슬라이드 적용
-      - 인디케이터 종류 2가지 추가
+      - 인디케이터 종류 2가지 추가 ('number', 'bar')
+    * 2021-04-02
+      - 스와이프 영역에 보여지는 object의 개수를 사용자가 지정할 수 있도록 설정 [진행중]
+      - object clone에 마진값 추가
+      - 마진값 추가로 인한 이벤트 적용값 수정
+  ====================== ver 1.1 ======================
 ***/
 
 function Gswiper (opt) {
@@ -18,11 +23,6 @@ function Gswiper (opt) {
         var pageXY = new Array(pageX, pageY);
 
         return pageXY;
-    };
-
-    this.scrollUpDown = function(e) {
-        var scrollUpDown = e.originalEvent.deltaY
-        return scrollUpDown;
     };
     
     this.targetName = opt.targetName;                                                                                                               // swiper target
@@ -39,6 +39,8 @@ function Gswiper (opt) {
     this.slideSpeed = opt.slideSpeed || '1s';                                                                                                       // 슬라이드 스피드 : 1s (default)
     this.slideEffect = opt.slideEffect || 'ease'                                                                                                    // 슬라이드 이펙트 : ease (default)
     this.ingSlideNot = opt.ingSlideNot || false;                                                                                                    // 슬라이드 중 이벤트 막기 : false (default)
+    this.itemView = opt.itemView || 1;                                                                                                              // 슬라이드 영역에서 한번에 몇개의 슬라이드를 노출 할지 결정 : 1 (default)
+    this.itemViewSlide = this.itemView > 1 ? opt.itemViewSlide : opt.itemView;                                                                      //  ㄴ 한번에 2개 이상이 노출되는 경우 몇개씩 슬라이드 할지 결정 : this.itemView (default)
 
     this.swiperWrapper = this.targetName.parents('.swiper-wrap');
     this.slideItem = this.targetName.find('.slide-item');
@@ -82,6 +84,9 @@ function Gswiper (opt) {
     this.firstIndex = 0;
     this.lastIndex = this.slideLength - 1;
 
+    this.slideItemLT = this.mode === 'horizontal' ? 'margin-left' : 'margin-top';
+    this.slideItemRB = this.mode === 'horizontal' ? 'margin-right' : 'margin-bottom';
+
     this.transition_Duration = this.slideSpeed;
     this.transition_Property = this.mode == 'horizontal' ? 'left' : 'top';
     this.transition_Effect = this.slideEffect;
@@ -93,6 +98,13 @@ function Gswiper (opt) {
 
     this.init();
 }
+
+/**
+ * slideWidth / slideHeight = x
+ * between = y
+ * index = a
+ * length = b
+ */
 
 Gswiper.prototype = {
     init : function() {
@@ -114,7 +126,11 @@ Gswiper.prototype = {
     // 기본 HTML 세팅
     defaultset : function() {
         
-        this.swiperWrapper.css({'width': this.slideWidth, 'height': this.slideHeight}).find('.swiper-cont').css({'width': this.slideWidth, 'height': this.slideHeight});
+        var slideWidth = this.mode === 'horizontal' ? (this.itemView > 1 ? this.slideWidth * this.itemView + this.between  * 2 * (this.itemView - 1) : this.slideWidth) : this.slideWidth;
+        var slideHeight = this.mode === 'vertical' ? (this.itemView > 1 ? this.slideHeight * this.itemView + this.between  * 2 * (this.itemView - 1) : this.slideHeight) : this.slideHeight;
+        
+        this.swiperWrapper.css({'width': slideWidth, 'height': slideHeight})
+            .find('.swiper-cont').css({'width': slideWidth, 'height': slideHeight});
 
         // 슬라이드 아이템 세팅
         this.slideItemSet();
@@ -128,20 +144,26 @@ Gswiper.prototype = {
 
     // 슬라이드 아이템 세팅
     slideItemSet : function() {
+        
         this.slideItem.css({'width': this.slideWidth, 'height': this.slideHeight});
+        this.slideItem.css(this.slideItemLT, this.between + 'px');
+        this.slideItem.css(this.slideItemRB, this.between + 'px');
+
         for (var i = 0; i <= this.slideLength; i++) {
             this.slideItem.eq(i).attr('slide-data', i);
         }
 
+        // 활성화 아이템 클래스 추가
+        this.slideItem.eq(this.viewIndex).addClass('active');
+
+        // 'loop'의 경우 클론
         if (this.loop === true) {
             var firstClone = this.slideItem.eq(this.slideLength - 1).clone().addClass('clone').attr({'data-clone': this.slideLength - 1, 'slide-data': -1});
             var lastClone = this.slideItem.eq(0).clone().addClass('clone').attr({'data-clone': 0, 'slide-data': this.slideLength});
             lastClone.appendTo(this.targetName);
             firstClone.prependTo(this.targetName);
         }
-
-        // 활성화 아이템 클래스 추가
-        this.slideItem.eq(this.viewIndex).addClass('active');
+        
     },
 
     // 슬라이드 버튼 세팅
@@ -155,6 +177,8 @@ Gswiper.prototype = {
 
         this.targetName.parents('.swiper-wrap').find('.swiper-indicator').append('<ul class="indicator-list"></ul>');
 
+        // console.log(this.slideLength);
+
         // 인디케이터 타입 : dot , bar
         if (this.indicatorType === 'dot') {
             for (var i = 0; i <= this.slideLength - 1; i++) {
@@ -163,7 +187,7 @@ Gswiper.prototype = {
             }
 
             // 'dot' 인디케이터 클래스 추가
-            this.swiperWrapper.find('.indicator-items').eq(this.viewIndex).addClass('active');
+            this.swiperWrapper.find('> .indicator-items').eq(this.viewIndex).addClass('active');
 
         } 
         // 인디케이터 타입 : number
@@ -201,13 +225,13 @@ Gswiper.prototype = {
         this.cloneLength = this.loop === true ? 1 : 0;
 
         // console.log('cloneLength :', this.cloneLength, '|| viewIndex :', this.viewIndex);
-
-        this.moveX = - this.slideWidth * (this.cloneLength + this.viewIndex) - this.between * (2 * this.viewIndex + 1);
-        this.moveY = - this.slideHeight * (this.cloneLength + this.viewIndex) - this.between * (2 * this.viewIndex + 1);
+        this.moveX = - this.slideWidth * (this.viewIndex + this.cloneLength) - this.between * (2 * this.viewIndex + 2 * this.cloneLength + 1);
+        this.moveY = - this.slideHeight * (this.viewIndex + this.cloneLength) - this.between * (2 * this.viewIndex + 2 * this.cloneLength + 1);
         
         this.cloneLength = $(this.targetName).find('.clone').length;
 
         this.slideItem.removeClass('active').not('.clone').eq(this.viewIndex).addClass('active');
+
         if (this.indicator === true) {
             this.indicatorDot.removeClass('active').eq(this.viewIndex).addClass('active');
             this.indicatorNum.find('.indicator-cur').html(this.viewIndex + 1)
@@ -217,19 +241,17 @@ Gswiper.prototype = {
             this.horizontalSet();
         } else if (this.mode === 'vertical') {
             this.verticalSet();
-        } 
+        }
     },
 
     // horizontal slide 세팅
     horizontalSet : function() {
-        this.slideItem.css({'margin-left': this.between + 'px', 'margin-right': this.between + 'px'});
-        this.targetName.css({'width': (this.slideWidth * (this.slideLength + this.cloneLength)) + (this.between * 2 * (this.slideLength + this.cloneLength)) + 'px' , 'height': this.slideHeight + 'px'});
+        this.targetName.css({'width': (this.slideWidth + this.between * 2) * (this.slideLength + this.cloneLength) + 'px' , 'height': this.slideHeight + 'px'});
         this.targetName.css('left', this.moveX + 'px');
     },
 
     verticalSet : function() {
-        this.slideItem.css({'margin-top': this.between + 'px', 'margin-bottom': this.between + 'px'});
-        this.targetName.css({'width': this.slideWidth + 'px' , 'height': (this.slideHeight * (this.slideLength + this.cloneLength)) + (this.between * 2 * (this.slideLength + this.cloneLength)) + 'px'});
+        this.targetName.css({'width': this.slideWidth + 'px' , 'height': (this.slideHeight + this.between * 2) * (this.slideLength + this.cloneLength) + 'px'});
         this.targetName.css('top', this.moveY + 'px');
     },
 
@@ -238,14 +260,11 @@ Gswiper.prototype = {
 
         $(_this.targetName)
             .on('mousedown', _this, _this.eventDown)
-            .on('touchstart', _this, _this.eventDown);
-
-        $(_this.targetName)
+            .on('touchstart', _this, _this.eventDown)
             .on('mousemove', _this, function(e){_this.eventMove(e)})
             .on('touchmove', _this, function(e){_this.eventMove(e)})
             .on('mouseup', _this, function(e){_this.eventUp(e)})
-            .on('touchend', _this, function(e){_this.eventUp(e)})
-            .on('mousewheel DOMMouseScroll', _this, function(e){_this.scrollE(e)});
+            .on('touchend', _this, function(e){_this.eventUp(e)});
             
         if (_this.slideBtn === true) {
             _this.nextBtn.on('click', _this, _this.nextBtnClick);
@@ -270,11 +289,6 @@ Gswiper.prototype = {
     eventMove : function(e) {
         var _this = e.data;
         if (_this.eventMoveChk === true) {_this.pageDragValue(e);}
-    },
-
-    scrollE : function(e) {
-        var _this = e.data;
-        console.log(_this.scrollUpDown(e));
     },
 
     // 마우스, 터치 업
@@ -383,12 +397,13 @@ Gswiper.prototype = {
 
             console.log('슬라이드 끝');
             if (_this.loop === true) {
+                // _this.moveXY = - bx - 2by - y - 2x - 2y = - x * (2 + b) - y * (3 + b * 2)
                 if (_this.curIndex == -1) {
-                    _this.moveXY = - (_this.slideWH * _this.lastIndex) - (_this.between * (_this.lastIndex * 2 + 1)) - _this.slideWH;
+                    _this.moveXY = - _this.slideWH * (_this.lastIndex + 1) - _this.between * (3 + _this.lastIndex * 2);
                     _this.transition_Duration = '0s';
                     _this.curIndex = _this.lastIndex;
                 } else if (_this.curIndex == _this.slideLength) {
-                    _this.moveXY = - (_this.slideWH * _this.firstIndex) - (_this.between * (_this.firstIndex * 2 + 1)) - _this.slideWH;
+                    _this.moveXY = - _this.slideWH * (_this.firstIndex + 1) - _this.between * (3 + _this.firstIndex * 2);
                     _this.transition_Duration = '0s';
                     _this.curIndex = _this.firstIndex;
                 }
@@ -525,7 +540,8 @@ Gswiper.prototype = {
         var _this = e.data;
         _this.cloneLength = _this.loop === true ? 1 : 0;
 
-        _this.moveXY = - (_this.slideWH * _this.curNavi) - (_this.between * 2 * _this.curNavi) - (_this.slideWH * _this.cloneLength);
+        // _this.moveXY = _this.itemView > 1 ? - x * a - y * (2a + 1) : - x * (a + 1) - y * (2a + 3)
+        _this.moveXY = _this.itemView > 1 ? - _this.slideWH * (_this.curNavi) - _this.between * (2 * _this.curNavi + 1) : - _this.slideWH * (_this.curNavi + 1) - _this.between * (2 * _this.curNavi + 3);
         _this.transition_Duration = _this.slideSpeed;
         _this.curIndex = _this.curNavi;
 
@@ -549,7 +565,7 @@ Gswiper.prototype = {
 
         var _locIndex;
         if (_this.curIndex > _this.lastIndex && _this.loop === true) {
-            _locIndex = firstIndex;
+            _locIndex = _this.firstIndex;
         } else if (_this.curIndex < 0 && _this.loop === true) {
             _locIndex = _this.lastIndex;
         } else {
