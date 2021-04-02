@@ -24,10 +24,10 @@
                 <div class="slide-item"><span>Slide 06</span></div>
                 <div class="slide-item"><span>Slide 07</span></div>
             </div>
-            <div class="swiper-btn">
+            <!-- <div class="swiper-btn">
                 <button type="button" class="slide-btn prev-btn">◀</button>
                 <button type="button" class="slide-btn next-btn">▶</button>
-            </div>
+            </div> -->
             <div class="swiper-indicator"></div>
         </div>
 
@@ -82,9 +82,20 @@
                 <div class="slide-item"><span>Slide 06</span></div>
                 <div class="slide-item"><span>Slide 07</span></div>
             </div>
-            <div class="swiper-btn">
-                <button type="button" class="slide-btn prev-btn">▲</button>
-                <button type="button" class="slide-btn next-btn">▼</button>
+            <div class="swiper-indicator"></div>
+        </div>
+
+        <div class="title"><p>swiper_horizontal = itemView : 2</p></div>
+        <div class="swiper-wrap">
+            <div class="swiper-list swiper_five">
+                <div class="slide-item"><span>Slide 01</span></div>
+                <div class="slide-item"><span>Slide 02</span></div>
+                <div class="slide-item"><span>Slide 03</span></div>
+                <div class="slide-item"><span>Slide 04</span></div>
+                <div class="slide-item"><span>Slide 05</span></div>
+                <div class="slide-item"><span>Slide 06</span></div>
+                <div class="slide-item"><span>Slide 07</span></div>
+                <div class="slide-item"><span>Slide 08</span></div>
             </div>
             <div class="swiper-indicator"></div>
         </div>
@@ -95,8 +106,8 @@
             targetName: $('.swiper_one'),
             between: 5,
             viewIndex: 3,
-            loop: true,
-            ingSlideNot: true
+            slideBtn: false,
+            loop: true
         });
 
         var swiper_two = new Gswiper({
@@ -116,13 +127,21 @@
 
         var swiper_four = new Gswiper({
             targetName: $('.swiper_four'),
+            mode: 'vertical',
             slideHeight: 350,
             between: 10,
             loop: true,
-            mode: 'vertical',
-            indicatorType: 'number'
-            // slideBtn: false
-            // indicatorType: 'number'
+            slideBtn: false
+        });
+
+        var swiper_five = new Gswiper({
+            targetName: $('.swiper_five'),
+            slideWidth: 350,
+            itemView: 2,
+            between: 5,
+            viewIndex: 3,
+            loop: true,
+            slideBtn: false
         });
     </script>
 </body>
