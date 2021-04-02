@@ -231,6 +231,7 @@ drag.prototype = {
         _this.dragAcSet(e);
         if (_this.targetEvent === true) {
             _this.dragMoveAction(e);
+            _this.overValue(e);
             _this.userMoveSet(e);
         } else if (_this.targetClickEvent === true) {
             _this.dragClickAction(e);
@@ -255,6 +256,7 @@ drag.prototype = {
 
         // console.log('this.XX : ', _this.XX, '/', 'this.moveX', _this.moveX, '/', 'intervalX.length', _this.intervalX.length);
         _this.obj[0].style.left = _this.moveX + '%';
+
         if (_this.langPoint === false) {
             _this.obj[0].children[0].innerHTML = _this.valueX;
 
@@ -264,7 +266,29 @@ drag.prototype = {
                 _this.obj[0].previousElementSibling.children[0].style.right = 100 - _this.moveX + '%';
             }
         } else {
-            console.log(_this.obj[0].attributes);
+            // console.log(_this.obj[0].attributes);
+            _this.obj[0].attributes[1].value = _this.valueX;
+        }
+    },
+
+    overValue : function(e) {
+        var _this = e.data;
+
+        if (_this.moveX > 100) {
+            _this.moveX = 100;
+            _this.valueX = _this.typeOf === 'number' ? _this.max : _this.lang[_this.intervalX.length - 1];
+            _this.obj[0].previousElementSibling.children[0].style.right = 100 - _this.moveX + '%';
+        } else if (_this.moveX < 0) {
+            _this.moveX = 0;
+            _this.valueX = _this.typeOf === 'number' ? _this.min : _this.lang[0];
+            _this.obj[0].nextElementSibling.children[0].style.left = _this.moveX + '%';
+        }
+        
+        _this.obj[0].style.left = _this.moveX + '%';
+
+        if (_this.langPoint === false) {
+            _this.obj[0].children[0].innerHTML = _this.valueX;
+        } else {
             _this.obj[0].attributes[1].value = _this.valueX;
         }
     },
@@ -273,7 +297,7 @@ drag.prototype = {
         var _this = e.data;
 
         if (_this.XX < 50) {
-            console.log('min');
+            // console.log('min');
             _this.obj[0].previousElementSibling.style.left = _this.moveX + '%';
             if (_this.langPoint === false) {
                 _this.obj[0].children[0].style.left = _this.moveX + '%';
@@ -282,7 +306,7 @@ drag.prototype = {
                 _this.obj[0].previousElementSibling.attributes[1].value = _this.valueX;
             }
         } else if (_this.XX >= 50) {
-            console.log('max');
+            // console.log('max');
             _this.obj[0].nextElementSibling.style.left = _this.moveX + '%';
             if (_this.langPoint === false) {
                 _this.obj[0].children[0].style.right = 100 - _this.moveX + '%';
