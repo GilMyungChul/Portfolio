@@ -540,8 +540,8 @@ Gswiper.prototype = {
         var _this = e.data;
         _this.cloneLength = _this.loop === true ? 1 : 0;
 
-        // _this.moveXY = _this.itemView > 1 ? - x * a - y * (2a + 1) : - x * (a + 1) - y * (2a + 3)
-        _this.moveXY = _this.itemView > 1 ? - _this.slideWH * (_this.curNavi) - _this.between * (2 * _this.curNavi + 1) : - _this.slideWH * (_this.curNavi + 1) - _this.between * (2 * _this.curNavi + 3);
+        // _this.moveXY = _this.itemView > 1 ? - x * (a + 1) - y * (2a + 2) : - x * (a + 1) - y * (2a + 3)
+        _this.moveXY = _this.itemView > 1 ? - _this.slideWH * (_this.curNavi + 1) - _this.between * (2 * _this.curNavi + 2) : - _this.slideWH * (_this.curNavi + 1) - _this.between * (2 * _this.curNavi + 3);
         _this.transition_Duration = _this.slideSpeed;
         _this.curIndex = _this.curNavi;
 
