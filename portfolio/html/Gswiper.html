@@ -13,7 +13,7 @@
 </head>
 <body>
     <div class="wrap">
-        <div class="title"><p>swiper_horizontal = indicatorType : 'dot'</p></div>
+        <div class="title"><p>swiper_horizontal = indicatorType : 'dot' , loop : true</p></div>
         <div class="swiper-wrap">
             <div class="swiper-list swiper_one">
                 <div class="slide-item"><span>Slide 01</span></div>
@@ -50,7 +50,7 @@
             <div class="swiper-indicator"></div>
         </div>
 
-        <div class="title"><p>swiper_horizontal = indicatorType : 'bar' , slideBtn : false </p></div>
+        <div class="title"><p>swiper_horizontal = indicatorType : 'bar' , slideBtn : false , loop : true </p></div>
         <div class="swiper-wrap">
             <div class="swiper-list swiper_three">
                 <div class="slide-item"><span>Slide 01</span></div>
@@ -71,7 +71,7 @@
             <div class="swiper-indicator"></div>
         </div>
 
-        <div class="title"><p>swiper_vertical</p></div>
+        <div class="title"><p>swiper_vertical = vertical , indicatorType : 'dot' , loop : true</p></div>
         <div class="swiper-wrap vertical">
             <div class="swiper-list swiper_four">
                 <div class="slide-item"><span>Slide 01</span></div>
@@ -85,7 +85,7 @@
             <div class="swiper-indicator"></div>
         </div>
 
-        <div class="title"><p>swiper_horizontal = itemView : 2</p></div>
+        <div class="title"><p>swiper_horizontal = itemView : 2개 이상 , loop : true</p></div>
         <div class="swiper-wrap">
             <div class="swiper-list swiper_five">
                 <div class="slide-item"><span>Slide 01</span></div>
@@ -112,23 +112,27 @@
 
         var swiper_two = new Gswiper({
             targetName: $('.swiper_two'),
-            // viewIndex: 5,
+            viewIndex: 5,
             slideWidth: 500,
             indicatorType: 'number'
         });
 
         var swiper_three = new Gswiper({
             targetName: $('.swiper_three'),
+            slideWidth: 400,
             between: 10,
-            viewIndex: 2,
-            loop: true,
-            indicatorType: 'bar'
+            itemView: 2,
+            // viewIndex: 2,
+            loop: true
+            // indicatorType: 'bar'
         });
 
         var swiper_four = new Gswiper({
             targetName: $('.swiper_four'),
             mode: 'vertical',
-            slideHeight: 350,
+            slideWidth: 400,
+            slideHeight: 200,
+            itemView: 2,
             between: 10,
             loop: true,
             slideBtn: false
@@ -136,11 +140,11 @@
 
         var swiper_five = new Gswiper({
             targetName: $('.swiper_five'),
-            slideWidth: 350,
-            itemView: 2,
+            // slideWidth: 250,
+            itemView: 3,
             between: 5,
             viewIndex: 3,
-            loop: true,
+            // loop: true,
             slideBtn: false
         });
     </script>
