@@ -9,10 +9,13 @@
       - 'horizontal', 'vertical' 슬라이드 적용
       - 인디케이터 종류 2가지 추가 ('number', 'bar')
     * 2021-04-02
-      - 스와이프 영역에 보여지는 object의 개수를 사용자가 지정할 수 있도록 설정 [진행중]
       - object clone에 마진값 추가
       - 마진값 추가로 인한 이벤트 적용값 수정
   ====================== ver 1.1 ======================
+    * 2021-04-07
+      - 스와이프 영역에 보여지는 object의 개수를 사용자가 지정할 수 있도록 설정
+      - 스와이프 영역에 보여지는 object의 개수만큼 clone 생성 그에 따른 적용값 설정
+      - 사용자가 css로 지정하는 width, height값을 제외한 스크립트로 지정하는 값이 없을 때, 자동적으로 상황에 맞게 설정 
 ***/
 
 function Gswiper (opt) {
@@ -42,6 +45,8 @@ function Gswiper (opt) {
     this.itemView = opt.itemView || 1;                                                                                                              // 슬라이드 영역에서 한번에 몇개의 슬라이드를 노출 할지 결정 : 1 (default)
     this.itemViewSlide = this.itemView > 1 ? opt.itemViewSlide : opt.itemView;                                                                      //  ㄴ 한번에 2개 이상이 노출되는 경우 몇개씩 슬라이드 할지 결정 : this.itemView (default)
 
+    this.autoPlay = opt.autoPlay || false;                                                                                                          // 자동 스와이프 : false (default) , true
+
     this.swiperWrapper = this.targetName.parents('.swiper-wrap');
     this.slideItem = this.targetName.find('.slide-item');
 
@@ -60,8 +65,14 @@ function Gswiper (opt) {
     this.moveY;
     this.moveXY;
     
-    this.slideWidth = this.slideWidth === false ? parseInt(this.swiperWrapper.innerWidth()) : this.slideWidth;
-    this.slideHeight = this.slideHeight === false ? parseInt(this.swiperWrapper.innerHeight()) : this.slideHeight;
+    if (this.mode === 'horizontal') {
+        this.slideWidth = this.slideWidth === false ? (this.itemView > 1 ? parseInt(this.swiperWrapper.innerWidth() / this.itemView) + 2 * this.between : this.swiperWrapper.innerWidth()) : this.slideWidth;
+        this.slideHeight = this.slideHeight === false ? this.swiperWrapper.innerHeight() : this.slideHeight;
+    } else {
+        this.slideWidth = this.slideWidth === false ? this.swiperWrapper.innerWidth() : this.slideWidth;
+        this.slideHeight = this.slideHeight === false ? (this.itemView > 1 ? parseInt(this.swiperWrapper.innerHeight() / this.itemView) + 2 * this.between : this.swiperWrapper.innerHeight()) : this.slideHeight;
+    }
+    
     this.slideWH = this.mode === 'horizontal' ? this.slideWidth : this.slideHeight;
     
     this.slideLength = this.targetName[0].childElementCount;
@@ -129,8 +140,7 @@ Gswiper.prototype = {
         var slideWidth = this.mode === 'horizontal' ? (this.itemView > 1 ? this.slideWidth * this.itemView + this.between  * 2 * (this.itemView - 1) : this.slideWidth) : this.slideWidth;
         var slideHeight = this.mode === 'vertical' ? (this.itemView > 1 ? this.slideHeight * this.itemView + this.between  * 2 * (this.itemView - 1) : this.slideHeight) : this.slideHeight;
         
-        this.swiperWrapper.css({'width': slideWidth, 'height': slideHeight})
-            .find('.swiper-cont').css({'width': slideWidth, 'height': slideHeight});
+        this.swiperWrapper.css({'width': slideWidth, 'height': slideHeight}).find('.swiper-cont').css({'width': slideWidth, 'height': slideHeight});
 
         // 슬라이드 아이템 세팅
         this.slideItemSet();
@@ -144,7 +154,7 @@ Gswiper.prototype = {
 
     // 슬라이드 아이템 세팅
     slideItemSet : function() {
-        
+
         this.slideItem.css({'width': this.slideWidth, 'height': this.slideHeight});
         this.slideItem.css(this.slideItemLT, this.between + 'px');
         this.slideItem.css(this.slideItemRB, this.between + 'px');
@@ -153,16 +163,29 @@ Gswiper.prototype = {
             this.slideItem.eq(i).attr('slide-data', i);
         }
 
-        // 활성화 아이템 클래스 추가
-        this.slideItem.eq(this.viewIndex).addClass('active');
-
         // 'loop'의 경우 클론
         if (this.loop === true) {
-            var firstClone = this.slideItem.eq(this.slideLength - 1).clone().addClass('clone').attr({'data-clone': this.slideLength - 1, 'slide-data': -1});
-            var lastClone = this.slideItem.eq(0).clone().addClass('clone').attr({'data-clone': 0, 'slide-data': this.slideLength});
-            lastClone.appendTo(this.targetName);
-            firstClone.prependTo(this.targetName);
+
+            for (var i = this.itemView; i > 0; i--) {
+                var fIndex = this.itemView - i; 
+                var first = i - (this.itemView + 1);
+                // console.log(this.targetName, fIndex, first);
+                var firstClone = this.slideItem.not('.clone').eq(fIndex).clone().addClass('clone').attr('slide-data', first);
+                firstClone.appendTo(this.targetName);
+            }
+            
+            for (var i = 0; i < this.itemView; i++) {
+                var lIndex = - (i + 1);
+                var last = i + this.slideLength + 1;
+                // console.log(this.targetName, lIndex, last);
+                var lastClone = this.slideItem.not('.clone').eq(lIndex).clone().addClass('clone').attr('slide-data', last);
+                lastClone.prependTo(this.targetName);
+            }
+            
         }
+
+        // 활성화 아이템 클래스 추가
+        this.slideItem.not('.clone').eq(this.viewIndex - 1).addClass('active');
         
     },
 
@@ -223,10 +246,11 @@ Gswiper.prototype = {
     modeSet : function() {
         this.viewIndex = this.viewIndex > 1 ? this.viewIndex - 1 : 0;
         this.cloneLength = this.loop === true ? 1 : 0;
+        var itemView = this.loop === true ? (this.itemView > 1 ? 1 : 0) : (this.itemView > 1 ? -1 : 0)
 
         // console.log('cloneLength :', this.cloneLength, '|| viewIndex :', this.viewIndex);
-        this.moveX = - this.slideWidth * (this.viewIndex + this.cloneLength) - this.between * (2 * this.viewIndex + 2 * this.cloneLength + 1);
-        this.moveY = - this.slideHeight * (this.viewIndex + this.cloneLength) - this.between * (2 * this.viewIndex + 2 * this.cloneLength + 1);
+        this.moveX = - this.slideWidth * (this.viewIndex + this.cloneLength + itemView) - this.between * (2 * this.viewIndex + 2 * this.cloneLength + 1 + 2 * itemView);
+        this.moveY = - this.slideHeight * (this.viewIndex + this.cloneLength + itemView) - this.between * (2 * this.viewIndex + 2 * this.cloneLength + 1 + 2 * itemView);
         
         this.cloneLength = $(this.targetName).find('.clone').length;
 
@@ -283,6 +307,8 @@ Gswiper.prototype = {
         
         _this.eventMouseUpChk = false;
         _this.startEventValue(e);
+
+        e.preventDefault();
     },
 
     // 마우스, 터치 무브
@@ -397,13 +423,13 @@ Gswiper.prototype = {
 
             console.log('슬라이드 끝');
             if (_this.loop === true) {
-                // _this.moveXY = - bx - 2by - y - 2x - 2y = - x * (2 + b) - y * (3 + b * 2)
+                // _this.moveXY = _this.itemView > 1 ? : - x * (2 + b) - y * (5 + b * 2) : - x * (1 + b) - y * (3 + b * 2)
                 if (_this.curIndex == -1) {
-                    _this.moveXY = - _this.slideWH * (_this.lastIndex + 1) - _this.between * (3 + _this.lastIndex * 2);
+                    _this.moveXY = _this.itemView > 1 ? - _this.slideWH * (_this.lastIndex + 2) - _this.between * (5 + _this.lastIndex * 2) : - _this.slideWH * (_this.lastIndex + 1) - _this.between * (3 + _this.lastIndex * 2);
                     _this.transition_Duration = '0s';
                     _this.curIndex = _this.lastIndex;
                 } else if (_this.curIndex == _this.slideLength) {
-                    _this.moveXY = - _this.slideWH * (_this.firstIndex + 1) - _this.between * (3 + _this.firstIndex * 2);
+                    _this.moveXY = _this.itemView > 1 ? - _this.slideWH * (_this.firstIndex + 2) - _this.between * (5 + _this.firstIndex * 2) : - _this.slideWH * (_this.firstIndex + 1) - _this.between * (3 + _this.firstIndex * 2);
                     _this.transition_Duration = '0s';
                     _this.curIndex = _this.firstIndex;
                 }
@@ -539,9 +565,12 @@ Gswiper.prototype = {
     naviClickValue : function(e) {
         var _this = e.data;
         _this.cloneLength = _this.loop === true ? 1 : 0;
+        
 
-        // _this.moveXY = _this.itemView > 1 ? - x * (a + 1) - y * (2a + 2) : - x * (a + 1) - y * (2a + 3)
-        _this.moveXY = _this.itemView > 1 ? - _this.slideWH * (_this.curNavi + 1) - _this.between * (2 * _this.curNavi + 2) : - _this.slideWH * (_this.curNavi + 1) - _this.between * (2 * _this.curNavi + 3);
+        // _this.moveXY = _this.itemView > 1 ? - x * (a + 2) - y * (2a + 5) : - x * (a + 1) - y * (2a + 3)
+        _this.moveXY = _this.itemView > 1 ? - _this.slideWH * (_this.curNavi + 2) - _this.between * (2 * _this.curNavi + 5) : - _this.slideWH * (_this.curNavi + 1) - _this.between * (2 * _this.curNavi + 3);
+
+        console.log(_this.moveXY, _this.itemView);
         _this.transition_Duration = _this.slideSpeed;
         _this.curIndex = _this.curNavi;
 
