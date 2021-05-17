@@ -19,9 +19,13 @@
 ***/
 
 function Gswiper (opt) {
+    
+    this.evtTypeStart = document.ontouchstart !== null ? 'mousedown' : 'touchstart';
+    this.evtTypeMove = document.ontouchstart !== null ? 'mousemove' : 'touchmove';
+    this.evtTypeEnd = document.ontouchstart !== null ? 'mouseup' : 'touchend';
 
     this.pageXY = function(e) {
-        var pageX = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageX : e.originalEvent.pageX;
+        var pageX = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageY : e.originalEvent.pageX;
         var pageY = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageY : e.originalEvent.pageY;
         var pageXY = new Array(pageX, pageY);
 
@@ -43,9 +47,11 @@ function Gswiper (opt) {
     this.slideEffect = opt.slideEffect || 'ease'                                                                                                    // 슬라이드 이펙트 : ease (default)
     this.ingSlideNot = opt.ingSlideNot || false;                                                                                                    // 슬라이드 중 이벤트 막기 : false (default)
     this.itemView = opt.itemView || 1;                                                                                                              // 슬라이드 영역에서 한번에 몇개의 슬라이드를 노출 할지 결정 : 1 (default)
-    this.itemViewSlide = this.itemView > 1 ? opt.itemViewSlide : opt.itemView;                                                                      //  ㄴ 한번에 2개 이상이 노출되는 경우 몇개씩 슬라이드 할지 결정 : this.itemView (default)
+    this.itemViewSlide = this.itemView > 1 ? (opt.itemViewSlide > this.itemView ? this.itemView : opt.itemViewSlide) : 1;                           // 노출되는 슬라이드가 2개 이상이 경우 슬라이드가 되는 개수 결정 : this.itemView (default)
 
     this.autoPlay = opt.autoPlay || false;                                                                                                          // 자동 스와이프 : false (default) , true
+    this.autoPlayTime = opt.autoPlayTime || 600;                                                                                                    // 자동 스와이프 슬라이드 타임 : 1000 (default)
+    this.autoPlaySet;
 
     this.swiperWrapper = this.targetName.parents('.swiper-wrap');
     this.slideItem = this.targetName.find('.slide-item');
@@ -59,7 +65,6 @@ function Gswiper (opt) {
     
     this.pageX;
     this.pageY;
-    this.pageXY;
 
     this.moveX;
     this.moveY;
@@ -132,6 +137,9 @@ Gswiper.prototype = {
         // 이벤트 적용 목록
         this.eventList();
 
+        // 자동롤링
+        this.autoPlayInit();
+
     },
 
     // 기본 HTML 세팅
@@ -200,9 +208,7 @@ Gswiper.prototype = {
 
         this.targetName.parents('.swiper-wrap').find('.swiper-indicator').append('<ul class="indicator-list"></ul>');
 
-        // console.log(this.slideLength);
-
-        // 인디케이터 타입 : dot , bar
+        // 인디케이터 타입 : dot
         if (this.indicatorType === 'dot') {
             for (var i = 0; i <= this.slideLength - 1; i++) {
                 this.indicatorDot = '<li class="indicator-items" indicator-data="' + i + '">' + (i + 1) + '</li>';
@@ -283,19 +289,39 @@ Gswiper.prototype = {
         var _this = this;
 
         $(_this.targetName)
-            .on('mousedown', _this, _this.eventDown)
-            .on('touchstart', _this, _this.eventDown)
-            .on('mousemove', _this, function(e){_this.eventMove(e)})
-            .on('touchmove', _this, function(e){_this.eventMove(e)})
-            .on('mouseup', _this, function(e){_this.eventUp(e)})
-            .on('touchend', _this, function(e){_this.eventUp(e)});
+            .off(_this.evtTypeStart).on(_this.evtTypeStart, _this, function(e){_this.eventDown(e)})
+            .off(_this.evtTypeMove).on(_this.evtTypeMove, _this, function(e){_this.eventMove(e)})
+            .off(_this.evtTypeEnd).on(_this.evtTypeEnd, _this, function(e){_this.eventUp(e)});
             
         if (_this.slideBtn === true) {
-            _this.nextBtn.on('click', _this, _this.nextBtnClick);
-            _this.prevBtn.on('click', _this, _this.prevBtnClick);
+            _this.nextBtn.on('click', _this, function(e){_this.nextBtnClick(e)});
+            _this.prevBtn.on('click', _this, function(e){_this.prevBtnClick(e)});
         }
 
-        if (_this.indicator === true) {$(_this.indicatorDot).on('click', _this, _this.naviClick);}
+        if (_this.indicator === true) {$(_this.indicatorDot).on('click', _this, function(e){_this.naviClick(e)});}
+        
+    },
+
+    autoPlayInit : function() {
+        var _this = this;
+        if (_this.autoPlay == true) {
+            _this.autoPlaySet = setTimeout(function(){_this.autoPlayEvent()}, _this.autoPlayTime);
+        }
+    },
+
+    autoPlayEvent : function() {
+        var _this = this;
+        
+        _this.curX = parseInt(_this.targetName[0].style.left);
+        _this.curY = parseInt(_this.targetName[0].style.top);
+        _this.curXY = _this.mode === 'horizontal' ? _this.curX : _this.curY;
+
+        _this.prevIndex = _this.viewIndex - 1;
+        _this.curIndex = _this.viewIndex;
+        _this.nextIndex = _this.viewIndex + 1;
+
+        _this.nextBtnValue(_this, true);
+        _this.eventLoopCheck(_this, true);
     },
 
     // var locPageXY = _this.mode === 'horizontal' ? _this.pageX : _this.pageY;                                     클릭 시, 마우스 및 터치 좌표값
@@ -306,9 +332,10 @@ Gswiper.prototype = {
         var _this = e.data;
         
         _this.eventMouseUpChk = false;
-        _this.startEventValue(e);
-
-        e.preventDefault();
+        _this.eventMoveChk = true;
+        _this.transitionIng = true;
+        
+        _this.objectDataValue(e);
     },
 
     // 마우스, 터치 무브
@@ -324,68 +351,60 @@ Gswiper.prototype = {
         _this.eventMouseUpChk = true;
         if (_this.eventMouseUpChk === true) {_this.eventMouseUpValue(e);};
 
-        _this.endEventValue(e);
+        _this.eventMoveChk = false;
+        _this.eventLoopCheck(e);
     },
 
     nextBtnClick : function(e) {
         var _this = e.data;
         
         _this.nextBtn = $(this);
-        _this.startEventValue(e);
+        _this.eventClickChk = true;
+        _this.transitionIng = true;
+
+        _this.objectDataValue(e);
+
         if (_this.eventClickChk === true) {_this.nextBtnValue(e);}
-        _this.endEventValue(e);
+
+        _this.eventClickChk = false;
+        _this.eventLoopCheck(e);
     },
 
     prevBtnClick : function(e) {
         var _this = e.data;
         
         _this.prevBtn = $(this);
-        _this.startEventValue(e);
-        if (_this.eventClickChk === true) {_this.prevBtnValue(e);}
-        _this.endEventValue(e);
+        _this.eventClickChk = true;
+        _this.transitionIng = true;
+
+        _this.objectDataValue(e);
+        
+        if (_this.eventClickChk === true) {_this.prevBtnValue(_this);}
+
+        _this.eventClickChk = false;
+        _this.eventLoopCheck(e);
     },
 
     naviClick : function(e) {
         var _this = e.data;
 
         _this.curNavi = parseInt($(this).index());
-        _this.startEventValue(e);
-        if (_this.eventClickChk === true) {_this.naviClickValue(e);};
-        _this.endEventValue(e);
-    },
 
-    // 슬라이드 시작
-    startEventValue : function(e) {
-        var _this = e.data;
-
-        _this.eventMoveChk = true;
-        _this.eventClickChk = true;
         _this.transitionIng = true;
-        
         _this.objectDataValue(e);
-    },
 
-    // 슬라이드 중간
-    moveEventValue : function(e) {
-        var _this = e.data;
-    },
-
-    // 슬라이드 끝
-    endEventValue : function(e) {
-        var _this = e.data;
-
-        _this.eventMoveChk = false;
-        _this.eventClickChk = false;
-
+        if (_this.eventClickChk === true) {_this.naviClickValue(_this);};
+        
         _this.eventLoopCheck(e);
     },
 
     // 슬라이드 데어터 값
     objectDataValue : function(e) {
         var _this = e.data;
+
         _this.pageX = _this.pageXY(e)[0];
         _this.pageY = _this.pageXY(e)[1];
-
+        
         _this.curX = parseInt(_this.targetName[0].style.left);
         _this.curY = parseInt(_this.targetName[0].style.top);
         _this.curXY = _this.mode === 'horizontal' ? _this.curX : _this.curY;
@@ -394,7 +413,7 @@ Gswiper.prototype = {
         _this.curIndex = _this.viewIndex;
         _this.nextIndex = _this.viewIndex + 1;
         
-        console.log('_this.prevIndex : ' + _this.prevIndex , '\n_this.curIndex : ' + _this.curIndex , '\n_this.nextIndex : ' + _this.nextIndex , '\n_this.firstIndex : ' + _this.firstIndex , '\n_this.viewIndex : ' + _this.viewIndex , '\n_this.lastIndex : ' + _this.lastIndex);
+        // console.log('_this.prevIndex : ' + _this.prevIndex , '\n_this.curIndex : ' + _this.curIndex , '\n_this.nextIndex : ' + _this.nextIndex , '\n_this.firstIndex : ' + _this.firstIndex , '\n_this.viewIndex : ' + _this.viewIndex , '\n_this.lastIndex : ' + _this.lastIndex);
     },
 
     // 드래그의 50%로 넘어가지 않으면 다시 슬라이드 제자리로 설정
@@ -414,8 +433,13 @@ Gswiper.prototype = {
     },
 
     // 무한루프 값에 따른 설정 값
-    eventLoopCheck : function(e) {
-        var _this = e.data;
+    eventLoopCheck : function(e, _obj) {
+
+        if (_obj) {
+            var _this = e;
+        } else {
+            var _this = e.data;
+        }
         
         $(_this.targetName).on("transitionend webkitTransitionEnd", _this, function(e) {
             _this.transitionIng = false;
@@ -443,7 +467,8 @@ Gswiper.prototype = {
             
             _this.viewIndex = _this.curIndex;
             _this.objectDataValue(e);
-            _this.slideMoveValue(e);
+            _this.slideMoveValue(_this);
+            _this.autoPlayInit(e);
         })
     },
 
@@ -462,8 +487,8 @@ Gswiper.prototype = {
             _this.prevEventValue(e)
         }
         
-        _this.slideMoveValue(e);
-        _this.indexValue(e);
+        _this.slideMoveValue(_this);
+        _this.indexValue(_this);
         
     },
 
@@ -521,8 +546,14 @@ Gswiper.prototype = {
         }
     },
 
-    nextBtnValue : function(e) {
-        var _this = e.data;
+    nextBtnValue : function(e, _obj) {
+
+        if (_obj) {
+            var _this = e;
+        } else {
+            var _this = e.data;
+        }
+        
 
         _this.moveXY = _this.curXY - _this.slideWH - (_this.between * 2);
         _this.curIndex = _this.nextIndex;
@@ -537,12 +568,12 @@ Gswiper.prototype = {
             }
         }
         
-        _this.slideMoveValue(e);
-        _this.indexValue(e);
+        _this.slideMoveValue(_this);
+        _this.indexValue(_this);
     },
 
     prevBtnValue : function(e) {
-        var _this = e.data;
+        var _this = e;
 
         _this.moveXY = _this.curXY + _this.slideWH + (_this.between * 2);
         _this.curIndex = _this.prevIndex;
@@ -557,13 +588,13 @@ Gswiper.prototype = {
             }
         }
         
-        _this.slideMoveValue(e);
-        _this.indexValue(e);
+        _this.slideMoveValue(_this);
+        _this.indexValue(_this);
     },
 
     // 네비게이션 클릭시, 필요한 값 세팅
     naviClickValue : function(e) {
-        var _this = e.data;
+        var _this = e;
         _this.cloneLength = _this.loop === true ? 1 : 0;
         
 
@@ -582,7 +613,7 @@ Gswiper.prototype = {
 
     // 드래그, 버튼, 네비게이션 값을 받아 슬라이드 동작
     slideMoveValue : function(e) {
-        var _this = e.data;
+        var _this = e;
 
         _this.targetName.css(_this.transition_Property, _this.moveXY + 'px');
         _this.targetName[0].style.transitionProperty = _this.transition_Property;
@@ -590,8 +621,8 @@ Gswiper.prototype = {
     },
 
     indexValue : function(e) {
-        var _this = e.data;
-
+        var _this = e;
+        
         var _locIndex;
         if (_this.curIndex > _this.lastIndex && _this.loop === true) {
             _locIndex = _this.firstIndex;
