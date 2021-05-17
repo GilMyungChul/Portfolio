@@ -103,50 +103,56 @@
 
     <script type="text/javascript">
         var swiper_one = new Gswiper({
-            targetName: $('.swiper_one'),
-            between: 5,
-            viewIndex: 3,
-            slideBtn: false,
-            loop: true
-        });
+                targetName: $('.swiper_one'),
+                between: 5,
+                viewIndex: 3,
+                slideBtn: false,
+                loop: true
+            });
+    
+            var swiper_two = new Gswiper({
+                targetName: $('.swiper_two'),
+                viewIndex: 5,
+                slideWidth: 500,
+                indicatorType: 'number'
+            });
 
-        var swiper_two = new Gswiper({
-            targetName: $('.swiper_two'),
-            viewIndex: 5,
-            slideWidth: 500,
-            indicatorType: 'number'
-        });
+            var swiper_three = new Gswiper({
+                targetName: $('.swiper_three'),
+                slideWidth: 400,
+                between: 10,
+                itemView: 2,
+                itemViewSlide: 2,
+                viewIndex: 2,
+                loop: true,
+                slideBtn: false,
+                autoPlay: true,
+                autoPlayTime: 2000
+                // indicatorType: 'bar'
+            });
 
-        var swiper_three = new Gswiper({
-            targetName: $('.swiper_three'),
-            slideWidth: 400,
-            between: 10,
-            itemView: 2,
-            // viewIndex: 2,
-            loop: true
-            // indicatorType: 'bar'
-        });
+            var swiper_four = new Gswiper({
+                targetName: $('.swiper_four'),
+                mode: 'vertical',
+                slideWidth: 400,
+                slideHeight: 200,
+                itemView: 2,
+                between: 10,
+                loop: true,
+                slideBtn: false,
+                autoPlay: true,
+                autoPlayTime: 2000
+            });
 
-        var swiper_four = new Gswiper({
-            targetName: $('.swiper_four'),
-            mode: 'vertical',
-            slideWidth: 400,
-            slideHeight: 200,
-            itemView: 2,
-            between: 10,
-            loop: true,
-            slideBtn: false
-        });
-
-        var swiper_five = new Gswiper({
-            targetName: $('.swiper_five'),
-            // slideWidth: 250,
-            itemView: 3,
-            between: 5,
-            viewIndex: 3,
-            // loop: true,
-            slideBtn: false
-        });
+            var swiper_five = new Gswiper({
+                targetName: $('.swiper_five'),
+                // slideWidth: 250,
+                itemView: 3,
+                between: 5,
+                viewIndex: 3,
+                // loop: true,
+                slideBtn: false
+            });
     </script>
 </body>
 </html>
