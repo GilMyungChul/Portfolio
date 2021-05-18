@@ -13,7 +13,7 @@
 </head>
 <body>
     <div class="wrap">
-        <div class="title"><p>swiper_horizontal = indicatorType : 'dot' , loop : true</p></div>
+        <div class="title"><p>'swiper_one' / 'swiper_six'</p></div>
         <div class="swiper-wrap">
             <div class="swiper-list swiper_one">
                 <div class="slide-item"><span>Slide 01</span></div>
@@ -24,14 +24,22 @@
                 <div class="slide-item"><span>Slide 06</span></div>
                 <div class="slide-item"><span>Slide 07</span></div>
             </div>
-            <!-- <div class="swiper-btn">
-                <button type="button" class="slide-btn prev-btn">◀</button>
-                <button type="button" class="slide-btn next-btn">▶</button>
-            </div> -->
+            <div class="swiper-indicator"></div>
+        </div>
+        <div class="swiper-wrap" style="margin-top:20px;">
+            <div class="swiper-list swiper_six">
+                <div class="slide-item"><span>Slide 01</span></div>
+                <div class="slide-item"><span>Slide 02</span></div>
+                <div class="slide-item"><span>Slide 03</span></div>
+                <div class="slide-item"><span>Slide 04</span></div>
+                <div class="slide-item"><span>Slide 05</span></div>
+                <div class="slide-item"><span>Slide 06</span></div>
+                <div class="slide-item"><span>Slide 07</span></div>
+            </div>
             <div class="swiper-indicator"></div>
         </div>
 
-        <div class="title"><p>swiper_horizontal = indicatorType : 'number'</p></div>
+        <div class="title"><p>'swiper-two'</p></div>
         <div class="swiper-wrap">
             <div class="swiper-list swiper_two">
                 <div class="slide-item"><span>Slide 01</span></div>
@@ -50,7 +58,7 @@
             <div class="swiper-indicator"></div>
         </div>
 
-        <div class="title"><p>swiper_horizontal = indicatorType : 'bar' , slideBtn : false , loop : true </p></div>
+        <div class="title"><p>'swiper-three'</p></div>
         <div class="swiper-wrap">
             <div class="swiper-list swiper_three">
                 <div class="slide-item"><span>Slide 01</span></div>
@@ -64,14 +72,14 @@
                 <div class="slide-item"><span>Slide 09</span></div>
                 <div class="slide-item"><span>Slide 10</span></div>
             </div>
-            <div class="swiper-btn">
+            <!-- <div class="swiper-btn">
                 <button type="button" class="slide-btn prev-btn">◀</button>
                 <button type="button" class="slide-btn next-btn">▶</button>
-            </div>
+            </div> -->
             <div class="swiper-indicator"></div>
         </div>
 
-        <div class="title"><p>swiper_vertical = vertical , indicatorType : 'dot' , loop : true</p></div>
+        <div class="title"><p>'swiper-four'</p></div>
         <div class="swiper-wrap vertical">
             <div class="swiper-list swiper_four">
                 <div class="slide-item"><span>Slide 01</span></div>
@@ -81,11 +89,12 @@
                 <div class="slide-item"><span>Slide 05</span></div>
                 <div class="slide-item"><span>Slide 06</span></div>
                 <div class="slide-item"><span>Slide 07</span></div>
+                <div class="slide-item"><span>Slide 08</span></div>
             </div>
             <div class="swiper-indicator"></div>
         </div>
 
-        <div class="title"><p>swiper_horizontal = itemView : 2개 이상 , loop : true</p></div>
+        <div class="title"><p>'swiper-five'</p></div>
         <div class="swiper-wrap">
             <div class="swiper-list swiper_five">
                 <div class="slide-item"><span>Slide 01</span></div>
@@ -103,56 +112,67 @@
 
     <script type="text/javascript">
         var swiper_one = new Gswiper({
-                targetName: $('.swiper_one'),
-                between: 5,
-                viewIndex: 3,
-                slideBtn: false,
-                loop: true
-            });
-    
-            var swiper_two = new Gswiper({
-                targetName: $('.swiper_two'),
-                viewIndex: 5,
-                slideWidth: 500,
-                indicatorType: 'number'
-            });
+            targetName: $('.swiper_one'),
+            between: 5,
+            // viewIndex: 3,
+            itemView: 4,
+            swiperBtn: false,
+            loop: true
+        });
 
-            var swiper_three = new Gswiper({
-                targetName: $('.swiper_three'),
-                slideWidth: 400,
-                between: 10,
-                itemView: 2,
-                itemViewSlide: 2,
-                viewIndex: 2,
-                loop: true,
-                slideBtn: false,
-                autoPlay: true,
-                autoPlayTime: 2000
-                // indicatorType: 'bar'
-            });
+        var swiper_six = new Gswiper({
+            targetName: $('.swiper_six'),
+            between: 5,
+            // viewIndex: 3,
+            itemView: 3,
+            swiperBtn: false,
+            loop: true,
+            // indicator: false,
+            mergeTarget: swiper_one
+            // mergeDotHidden : 'visible'
+        });
 
-            var swiper_four = new Gswiper({
-                targetName: $('.swiper_four'),
-                mode: 'vertical',
-                slideWidth: 400,
-                slideHeight: 200,
-                itemView: 2,
-                between: 10,
-                loop: true,
-                slideBtn: false,
-                autoPlay: true,
-                autoPlayTime: 2000
-            });
+        var swiper_two = new Gswiper({
+            targetName: $('.swiper_two'),
+            viewIndex: 5,
+            swiperWidth: 500,
+            autoHeight: true
+            // indicatorType: 'number'
+        });
 
-            var swiper_five = new Gswiper({
-                targetName: $('.swiper_five'),
-                // slideWidth: 250,
-                itemView: 3,
-                between: 5,
-                viewIndex: 3,
-                // loop: true,
-                slideBtn: false
-            });
+        var swiper_three = new Gswiper({
+            targetName: $('.swiper_three'),
+            // swiperWidth: 400,
+            between: 10,
+            itemView: 2,
+            itemViewSlide: 2,
+            viewIndex: 2,
+            loop: true,
+            swiperBtn: false
+            // autoPlay: true,
+            // autoPlayTime: 2000
+            // indicatorType: 'bar'
+        });
+
+        var swiper_four = new Gswiper({
+            targetName: $('.swiper_four'),
+            mode: 'vertical',
+            // swiperWidth: 600,
+            // swiperHeight: 400,
+            loop: true,
+            swiperBtn: false
+            // autoPlay: true,
+            // autoPlayTime: 2000
+        });
+
+        var swiper_five = new Gswiper({
+            targetName: $('.swiper_five'),
+            itemView: 3,
+            between: 5,
+            viewIndex: 3,
+            swiperBtn: false,
+            loop: true
+        });
     </script>
 </body>
 </html>
