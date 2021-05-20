@@ -24,6 +24,10 @@
                 <div class="slide-item"><span>Slide 06</span></div>
                 <div class="slide-item"><span>Slide 07</span></div>
             </div>
+            <div class="swiper-btn">
+                <button type="button" class="slide-btn prev-btn">◀</button>
+                <button type="button" class="slide-btn next-btn">▶</button>
+            </div>
             <div class="swiper-indicator"></div>
         </div>
         <div class="swiper-wrap" style="margin-top:20px;">
@@ -35,6 +39,10 @@
                 <div class="slide-item"><span>Slide 05</span></div>
                 <div class="slide-item"><span>Slide 06</span></div>
                 <div class="slide-item"><span>Slide 07</span></div>
+            </div>
+            <div class="swiper-btn">
+                <button type="button" class="slide-btn prev-btn">◀</button>
+                <button type="button" class="slide-btn next-btn">▶</button>
             </div>
             <div class="swiper-indicator"></div>
         </div>
@@ -114,22 +122,23 @@
         var swiper_one = new Gswiper({
             targetName: $('.swiper_one'),
             between: 5,
-            // viewIndex: 3,
+            viewIndex: 4,
             itemView: 4,
-            swiperBtn: false,
+            // swiperBtn: false,
             loop: true
         });
 
         var swiper_six = new Gswiper({
             targetName: $('.swiper_six'),
             between: 5,
-            // viewIndex: 3,
+            viewIndex: 4,
             itemView: 3,
-            swiperBtn: false,
+            // swiperBtn: false,
             loop: true,
             // indicator: false,
+            // mergeDotHidden: 'visible',
+            // mergeBtnHidden: 'visible',
             mergeTarget: swiper_one
-            // mergeDotHidden : 'visible'
         });
 
         var swiper_two = new Gswiper({
@@ -159,6 +168,7 @@
             mode: 'vertical',
             // swiperWidth: 600,
             // swiperHeight: 400,
+            between: 5,
             loop: true,
             swiperBtn: false
             // autoPlay: true,
