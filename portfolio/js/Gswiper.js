@@ -56,6 +56,7 @@ function Gswiper (opt) {
     this.mergeTarget = opt.mergeTarget || false;                                                                                                    // 동시 기능 스와이프 : 부모 스와이프
     this.mergeObj;                                                                                                                                  // 동시 기능 스와이프 : 부모 스와이프에 자식 스와이프 데이터값 추가
     this.mergeDotHidden = opt.mergeDotHidden || 'hidden';                                                                                           // 동시 기능 스와이프 : 자식 스와이프 인디케이터 숨김 : 'hidden' (default), 'visible
+    this.mergeBtnHidden = opt.mergeBtnHidden || 'hidden';
 
     this.autoPlay = opt.autoPlay || false;                                                                                                          // 자동 스와이프 : false (default) , true
     this.autoPlayTime = opt.autoPlayTime || 600;                                                                                                    // 자동 스와이프 스와이프 타임 : 1000 (default)
@@ -97,8 +98,8 @@ function Gswiper (opt) {
     this.offsetY = this.swiperWrapper.offset().top;
     this.offsetXY = this.mode === 'horizontal' ? this.offsetX : this.offsetY;
     
-    this.curX;
-    this.curY;
+    this.curX = this.targetName.position().left;
+    this.curY = this.targetName.position().top;
     this.curXY;
     
     this.curNavi;
@@ -171,16 +172,16 @@ Gswiper.prototype = {
         if (this.indicator === true) {this.swiperIndicatorSet();};
 
         // 스와이프 버튼
-        if (this.swiperBtn === true) {this.swiperBtnSet();};
+        if (this.swiperBtn === true) {
+            this.swiperBtnSet();
+        } else {
+            this.swiperWrapper.find('.swiper-btn > button').css('display', 'none');
+        };
         
     },
 
     // 스와이프 아이템 세팅
     swiperItemSet : function() {
-
-        if (this.autoHeight) {
-            console.log($(this.swiperItem).eq(this.viewIndex - 1).height(), $(this.swiperItem).eq(this.viewIndex - 1));
-        }
 
         if (this.mode === 'horizontal') {
             this.swiperItem.css({'width': this.swiperWidth});
@@ -225,6 +226,10 @@ Gswiper.prototype = {
     swiperBtnSet : function() {
         this.prevBtn = this.swiperWrapper.find('.prev-btn');
         this.nextBtn = this.swiperWrapper.find('.next-btn');
+
+        if (this.mergeTarget && this.mergeBtnHidden == 'hidden') {
+            this.swiperWrapper.find('.swiper-btn > button').css({'z-index' : -1, 'opacity' : 0})
+        }
     },
 
     // swiper indicator 세팅
@@ -244,7 +249,7 @@ Gswiper.prototype = {
 
             // 동시 스와이프를 사용할 때, 자식의 스와이프 인디케이터 숨김
             if (this.mergeTarget && this.mergeDotHidden == 'hidden') {
-                $(this.swiperWrapper).find('.indicator-list').css({'z-index': -1, 'opacity': 0});
+                $(this.swiperWrapper).find('.indicator-list').css({'z-index' : -1, 'opacity' : 0});
             }
 
         } 
@@ -356,8 +361,8 @@ Gswiper.prototype = {
     autoPlayEvent : function() {
         var _this = this;
         
-        _this.curX = parseInt(_this.targetName[0].style.left);
-        _this.curY = parseInt(_this.targetName[0].style.top);
+        _this.curX = parseInt(_this.targetName.position().left);
+        _this.curY = parseInt(_this.targetName.position().top);
         _this.curXY = _this.mode === 'horizontal' ? _this.curX : _this.curY;
 
         _this.prevIndex = _this.viewIndex - 1;
@@ -374,10 +379,6 @@ Gswiper.prototype = {
     // 마우스, 터치 다운
     eventDown : function(e) {
         var _this = e.data;
-
-        if (_this.mergeObj) {
-            console.log($(_this.mergeObj.indicatorDot));
-        }
         
         _this.eventMouseUpChk = false;
         _this.eventMoveChk = true;
@@ -412,11 +413,26 @@ Gswiper.prototype = {
     nextBtnClick : function(e) {
         var _this = e.data;
         
-        _this.nextBtn = $(this);
+        if (_this.mergeObj) {
+            if (_this.viewIndex != _this.mergeObj.viewIndex) {
+                _this.mergeObj.curX = - _this.mergeObj.swiperWidth * (_this.viewIndex + (_this.mergeObj.cloneLength)/2) - 2 * _this.mergeObj.between * (_this.viewIndex + (_this.mergeObj.cloneLength)/2) - _this.mergeObj.between;
+                _this.mergeObj.targetName.css(_this.mergeObj.transition_Property, _this.mergeObj.curX + 'px').find('> div').not('.clone').removeClass('active').eq(_this.viewIndex + 1).addClass('active');
+                _this.mergeObj.targetName[0].style.transitionProperty = _this.mergeObj.transition_Property;
+                _this.mergeObj.targetName[0].style.transitionDuration = _this.mergeObj.transition_Duration;
+
+                $(_this.mergeObj.indicatorDot).removeClass('active').eq(_this.viewIndex + 1).addClass('active');
+            } else {
+                $(_this.mergeObj.nextBtn).trigger('click');
+            }
+        } 
+
         _this.eventClickChk = true;
         _this.transitionIng = true;
-
         _this.objectDataValue(e);
+
+        if (_this.mergeTarget) {
+            _this.nextIndex = parseInt(_this.curX / - _this.swiperWidth) - 1;
+        }
 
         if (_this.eventClickChk === true) {_this.nextBtnValue(e);}
 
@@ -427,12 +443,27 @@ Gswiper.prototype = {
     // '이전'버튼
     prevBtnClick : function(e) {
         var _this = e.data;
-        
-        _this.prevBtn = $(this);
+
+        if (_this.mergeObj) {
+            if (_this.viewIndex != _this.mergeObj.viewIndex) {
+                _this.mergeObj.curX = - _this.mergeObj.swiperWidth * (_this.viewIndex + (_this.mergeObj.cloneLength)/2 - 2) - 2 * _this.mergeObj.between * (_this.viewIndex + (_this.mergeObj.cloneLength)/2 - 2) - _this.mergeObj.between;
+                _this.mergeObj.targetName.css(_this.mergeObj.transition_Property, _this.mergeObj.curX + 'px').find('> div').not('.clone').removeClass('active').eq(_this.viewIndex - 1).addClass('active');
+                _this.mergeObj.targetName[0].style.transitionProperty = _this.mergeObj.transition_Property;
+                _this.mergeObj.targetName[0].style.transitionDuration = _this.mergeObj.transition_Duration;
+
+                $(_this.mergeObj.indicatorDot).removeClass('active').eq(_this.viewIndex - 1).addClass('active');
+            } else {
+                $(_this.mergeObj.prevBtn).trigger('click');
+            }
+        } 
+
         _this.eventClickChk = true;
         _this.transitionIng = true;
-
         _this.objectDataValue(e);
+
+        if (_this.mergeTarget) {
+            _this.prevIndex = parseInt(_this.curX / - _this.swiperWidth) - 3;
+        }
         
         if (_this.eventClickChk === true) {_this.prevBtnValue(_this);}
 
@@ -463,15 +494,15 @@ Gswiper.prototype = {
     objectDataValue : function(e) {
         var _this = e.data;
         
-        _this.curX = parseInt(_this.targetName[0].style.left);
-        _this.curY = parseInt(_this.targetName[0].style.top);
+        _this.curX = parseInt(_this.targetName.position().left);
+        _this.curY = parseInt(_this.targetName.position().top);
         _this.curXY = _this.mode === 'horizontal' ? _this.curX : _this.curY;
 
         _this.prevIndex = _this.viewIndex - 1;
         _this.curIndex = _this.viewIndex;
         _this.nextIndex = _this.viewIndex + 1;
         
-        console.log('_this.prevIndex : ' + _this.prevIndex , '\n_this.curIndex : ' + _this.curIndex , '\n_this.nextIndex : ' + _this.nextIndex , '\n_this.firstIndex : ' + _this.firstIndex , '\n_this.viewIndex : ' + _this.viewIndex , '\n_this.lastIndex : ' + _this.lastIndex);
+        // console.log('_this.prevIndex : ' + _this.prevIndex , '\n_this.curIndex : ' + _this.curIndex , '\n_this.nextIndex : ' + _this.nextIndex , '\n_this.firstIndex : ' + _this.firstIndex , '\n_this.viewIndex : ' + _this.viewIndex , '\n_this.lastIndex : ' + _this.lastIndex);
     },
 
     // 드래그의 50%로 넘어가지 않으면 다시 스와이프 제자리로 설정
@@ -482,7 +513,6 @@ Gswiper.prototype = {
         var curPageXY = _this.mode === 'horizontal' ? _this.pageXY(e)[0] : _this.pageXY(e)[1];
 
         if ( curPageXY - _this.offsetXY > (locPageXY - _this.offsetXY) * 0.7 && curPageXY - _this.offsetXY < (locPageXY - _this.offsetXY) / 0.7 ) {
-            console.log('X축 50% 넘지 않았다');
             _this.moveXY = _this.curXY;
         }
 
@@ -504,7 +534,7 @@ Gswiper.prototype = {
             _this.transitionIng = false;
             $(_this.targetName).off("transitionend webkitTransitionEnd");
 
-            console.log('스와이프 끝');
+            // console.log('스와이프 끝');
             if (_this.loop === true) {
                 // _this.moveXY = _this.itemView > 1 ? : - x * (2 + b) - y * (5 + b * 2) : - x * (1 + b) - y * (3 + b * 2)
                 if (_this.curIndex == -1) {
