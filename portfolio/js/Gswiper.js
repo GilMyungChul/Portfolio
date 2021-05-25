@@ -20,6 +20,9 @@
     * 2021-04-07
       - autoPlay 추가
       - 인디케이터, 버튼을 통한 동시 스와이프 추가
+    * 2021-05-25
+      - 2개 이상의 동시 스와이프 기능 추가
+      - mouseenter / mouseleave로 autoPlay 컨트롤
 ***/
 
 function Gswiper (opt) {
@@ -53,13 +56,13 @@ function Gswiper (opt) {
     this.itemView = opt.itemView || 1;                                                                                                              // 스와이프 영역에서 한번에 몇개의 스와이프를 노출 할지 결정 : 1 (default)
     this.itemViewSwiper = this.itemView > 1 ? (opt.itemViewSwiper > this.itemView ? this.itemView : opt.itemViewSwiper) : 1;                        // 노출되는 스와이프가 2개 이상이 경우 스와이프가 되는 개수 결정 : this.itemView (default)
 
-    this.mergeTarget = opt.mergeTarget || false;                                                                                                    // 동시 기능 스와이프 : 부모 스와이프
-    this.mergeObj;                                                                                                                                  // 동시 기능 스와이프 : 부모 스와이프에 자식 스와이프 데이터값 추가
-    this.mergeDotHidden = opt.mergeDotHidden || 'hidden';                                                                                           // 동시 기능 스와이프 : 자식 스와이프 인디케이터 숨김 : 'hidden' (default), 'visible
-    this.mergeBtnHidden = opt.mergeBtnHidden || 'hidden';
+    this.mergeTarget = opt.mergeTarget || false;                                                                                                    // 동시 스와이프 : 부모 스와이프
+    this.mergeObj;                                                                                                                                  // 동시 스와이프 : 부모 스와이프에 자식 스와이프 데이터값 추가
+    this.mergeDotHidden = opt.mergeDotHidden || 'hidden';                                                                                           // 동시 스와이프 : 자식 스와이프 인디케이터 숨김 : 'hidden' (default), 'visible'
+    this.mergeBtnHidden = opt.mergeBtnHidden || 'hidden';                                                                                           // 동시 스와이프 : 자식 스와이프 좌/우 버튼 숨김 : 'hidden' (default), 'visible'
 
-    this.autoPlay = opt.autoPlay || false;                                                                                                          // 자동 스와이프 : false (default) , true
-    this.autoPlayTime = opt.autoPlayTime || 600;                                                                                                    // 자동 스와이프 스와이프 타임 : 1000 (default)
+    this.autoPlay = opt.autoPlay || false;                                                                                                          // 자동 롤링 : false (default) , true
+    this.autoPlayTime = opt.autoPlayTime || 600;                                                                                                    // 자동 롤링 타임 : 1000 (default)
     this.autoPlaySet;
 
     this.autoHeight = opt.autoHeight || false;                                                                                                      // 스와이프 높이 컨텐츠에 맞게 조정 : false (default), true
@@ -120,8 +123,9 @@ function Gswiper (opt) {
 
     this.eventMoveChk = false;
     this.eventClickChk = false;
-    this.eventMouseUpChk = false;
-    this.transitionIng = false;
+    this.eventMouseUpChk = false; 
+    this.transitionIng = false;                                                                                                                     // 스와이프 끝났는지 체크
+    this.autoPlayChk = true;                                                                                                                        // 자동 롤링 체크
 
     this.init();
 }
@@ -327,6 +331,10 @@ Gswiper.prototype = {
             .off(_this.evtTypeStart).on(_this.evtTypeStart, _this, function(e){_this.eventDown(e)})
             .off(_this.evtTypeMove).on(_this.evtTypeMove, _this, function(e){_this.eventMove(e)})
             .off(_this.evtTypeEnd).on(_this.evtTypeEnd, _this, function(e){_this.eventUp(e)});
+
+        $(_this.swiperWrapper)
+            .off('mouseenter').on('mouseenter', _this, function(e){_this.mouseEnter(e)})
+            .off('mouseleave').on('mouseleave', _this, function(e){_this.mouseLeave(e)});
             
         if (_this.swiperBtn === true) {
             _this.nextBtn.on('click', _this, function(e){_this.nextBtnClick(e)});
@@ -351,6 +359,7 @@ Gswiper.prototype = {
         }
     },
 
+    // 자동 롤링 init
     autoPlayInit : function() {
         var _this = this;
         if (_this.autoPlay == true) {
@@ -358,6 +367,7 @@ Gswiper.prototype = {
         }
     },
 
+    // 자동 롤링 이벤트 세팅값
     autoPlayEvent : function() {
         var _this = this;
         
@@ -490,6 +500,17 @@ Gswiper.prototype = {
         _this.swiperEndChk(e);
     },
 
+    // autoPlay 중시
+    mouseEnter : function() {
+        this.autoPlayChk = false;
+    },
+
+    // autoPlay 시작
+    mouseLeave : function() {
+        this.autoPlayChk = true;
+        this.autoPlayInit();
+    },
+
     // 스와이프 데이터 값
     objectDataValue : function(e) {
         var _this = e.data;
@@ -505,15 +526,22 @@ Gswiper.prototype = {
         // console.log('_this.prevIndex : ' + _this.prevIndex , '\n_this.curIndex : ' + _this.curIndex , '\n_this.nextIndex : ' + _this.nextIndex , '\n_this.firstIndex : ' + _this.firstIndex , '\n_this.viewIndex : ' + _this.viewIndex , '\n_this.lastIndex : ' + _this.lastIndex);
     },
 
-    // 드래그의 50%로 넘어가지 않으면 다시 스와이프 제자리로 설정
+    // 드래그의 30%로 넘어가지 않으면 다시 스와이프 제자리로 설정
     eventMouseUpValue : function(e) {
         var _this = e.data;
+        
+        var locPageXY = _this.mode === 'horizontal' ? _this.pageX : _this.pageY;                        // 마우스 다운 좌표값
+        var curPageXY = _this.mode === 'horizontal' ? _this.pageXY(e)[0] : _this.pageXY(e)[1];          // 마우스 무브 후 업 좌표값
+        var direction = locPageXY > curPageXY ? 'next' : 'prev';                                        // 좌/우 이동 감지
 
-        var locPageXY = _this.mode === 'horizontal' ? _this.pageX : _this.pageY;
-        var curPageXY = _this.mode === 'horizontal' ? _this.pageXY(e)[0] : _this.pageXY(e)[1];
-
-        if ( curPageXY - _this.offsetXY > (locPageXY - _this.offsetXY) * 0.7 && curPageXY - _this.offsetXY < (locPageXY - _this.offsetXY) / 0.7 ) {
-            _this.moveXY = _this.curXY;
+        if (direction == 'next') {
+            if (curPageXY - _this.offsetXY > (locPageXY - _this.offsetXY) * 0.7) {
+                _this.moveXY = _this.curXY;
+            }
+        } else if (direction == 'prev') {
+            if (curPageXY - _this.offsetXY < (locPageXY - _this.offsetXY) / 0.7) {
+                _this.moveXY = _this.curXY;
+            }
         }
 
         _this.targetName.css(_this.transition_Property, _this.moveXY);
@@ -548,16 +576,31 @@ Gswiper.prototype = {
                 }
             } else {
                 if (_this.curIndex == _this.firstIndex) {
-                    _this.curIndex = _this.firstIndex;
+                    _this.curIndex = - _this.firstIndex;
                 } else if (_this.curIndex == _this.lastIndex) {
                     _this.curIndex = _this.lastIndex;
+                }
+            } 
+            
+            if (_this.loop === false && _this.autoPlay === true) {
+                
+                if (_this.curIndex == _this.lastIndex) {
+                    _this.moveXY = -_this.between;
+                    _this.transition_Duration = '0s';
+                    _this.curIndex = 0;
+                    _this.indexValue(e);
                 }
             }
             
             _this.viewIndex = _this.curIndex;
             _this.objectDataValue(e);
             _this.swiperMoveValue(_this);
-            _this.autoPlayInit(e);
+
+            if (_this.autoPlayChk === true) {
+                _this.autoPlayInit(e);
+            } else {
+                clearTimeout(_this.autoPlaySet);
+            }
         })
     },
 
@@ -684,12 +727,13 @@ Gswiper.prototype = {
     // 인디케이터 값 세팅
     naviClickValue : function(e) {
         var _this = e;
-        _this.cloneLength = _this.loop === true ? 1 : 0;
+        var cloneLength = _this.loop === true ? _this.cloneLength / 2 : 0;
+        var num = _this.itemView % 2 ? 'odd' : 'even';                                              // 'odd' 홀수 / 'even' 짝수
+        var itemView = num == 'even' ? (_this.itemView > 2 ? _this.itemView / 2 : 0) : parseInt(_this.itemView / 2);
 
-        // _this.moveXY = _this.itemView > 1 ? - x * (a + 2) - y * (2a + 5) : - x * (a + 1) - y * (2a + 3)
-        _this.moveXY = _this.itemView > 1 ? - _this.swiperWH * (_this.curNavi + 2) - _this.between * (2 * _this.curNavi + 5) : - _this.swiperWH * (_this.curNavi + 1) - _this.between * (2 * _this.curNavi + 3);
+        // - _this.swiperWH * _this.curNavi - _this.swiperWH * _this.cloneLength - 2 * _this.between * _this.curNavi - 2 * _this.between * _this.cloneLength - _this.between
+        _this.moveXY = - _this.swiperWH * (_this.curNavi + cloneLength) - _this.between * ( (2 * _this.curNavi) + (2 * cloneLength) + 1 ) + _this.swiperWH * itemView + 2 * _this.between * itemView;
 
-        // console.log(_this.moveXY, _this.itemView);
         _this.transition_Duration = _this.swiperSpeed;
         _this.curIndex = _this.curNavi;
 
