@@ -47,28 +47,35 @@ function Gswiper (opt) {
     this.indicatorType = this.indicator === true ? ($.type(opt.indicatorType) == 'undefined' ? 'dot' : opt.indicatorType) : false                   // 인디케이터 종류 : 'dot' (default), 'number', 'bar'
     this.between = opt.between || 0;                                                                                                                // 스와이프 간 간격
     this.viewIndex = opt.viewIndex || 0;                                                                                                            // 스와이프 시작되는 시점 : 0 (default)
-    this.swiperWidth = opt.swiperWidth || false;                                                                                                    // 스와이프 width
-    this.swiperHeight = opt.swiperHeight || false;                                                                                                  // 스와이프 height
     this.loop = opt.loop || false;                                                                                                                  // 무한 스와이프 : false (default)
     this.swiperSpeed = opt.swiperSpeed || '1s';                                                                                                     // 스와이프 스피드 : 1s (default)
     this.swiperEffect = opt.swiperEffect || 'ease'                                                                                                  // 스와이프 이펙트 : ease (default)
     this.ingSwiperNot = opt.ingSwiperNot || false;                                                                                                  // 스와이프 중 이벤트 막기 : false (default)
     this.itemView = opt.itemView || 1;                                                                                                              // 스와이프 영역에서 한번에 몇개의 스와이프를 노출 할지 결정 : 1 (default)
     this.itemViewSwiper = this.itemView > 1 ? (opt.itemViewSwiper > this.itemView ? this.itemView : opt.itemViewSwiper) : 1;                        // 노출되는 스와이프가 2개 이상이 경우 스와이프가 되는 개수 결정 : this.itemView (default)
-
+    
     this.mergeTarget = opt.mergeTarget || false;                                                                                                    // 동시 스와이프 : 부모 스와이프
     this.mergeObj;                                                                                                                                  // 동시 스와이프 : 부모 스와이프에 자식 스와이프 데이터값 추가
     this.mergeDotHidden = opt.mergeDotHidden || 'hidden';                                                                                           // 동시 스와이프 : 자식 스와이프 인디케이터 숨김 : 'hidden' (default), 'visible'
     this.mergeBtnHidden = opt.mergeBtnHidden || 'hidden';                                                                                           // 동시 스와이프 : 자식 스와이프 좌/우 버튼 숨김 : 'hidden' (default), 'visible'
-
+    
     this.autoPlay = opt.autoPlay || false;                                                                                                          // 자동 롤링 : false (default) , true
     this.autoPlayTime = opt.autoPlayTime || 600;                                                                                                    // 자동 롤링 타임 : 1000 (default)
     this.autoPlaySet;
-
+    
     this.autoHeight = opt.autoHeight || false;                                                                                                      // 스와이프 높이 컨텐츠에 맞게 조정 : false (default), true
-
-    this.swiperWrapper = this.targetName.parents('.swiper-wrap');
+    this.valueOther = opt.valueOther || false;                                                                                                      // width, height 각 스와이프 오브젝트 마다 다른 경우 : true (default), false
+    
+    this.swiperWrapper = this.targetName.closest('.swiper-wrap');
     this.swiperItem = this.targetName.find('.slide-item');
+
+    if (this.mode === 'horizontal') {
+        this.swiperWidth = this.itemView > 1 ? (this.swiperWrapper.width() - 2 * this.between * (this.itemView - 1)) / this.itemView : this.swiperWrapper.width();
+        this.swiperHeight = this.swiperWrapper.height();
+    } else if (this.mode === 'vertical') {
+        this.swiperWidth = this.swiperWrapper.width();
+        this.swiperHeight = this.itemView > 1 ? (this.swiperWrapper.height()) - 2 * this.between  * (this.itemView - 1) / this.itemView : this.swiperWrapper.height();
+    }
 
     this.prevBtn;
     this.nextBtn;
@@ -83,14 +90,6 @@ function Gswiper (opt) {
     this.moveX;
     this.moveY;
     this.moveXY;
-    
-    if (this.mode === 'horizontal') {
-        this.swiperWidth = this.swiperWidth === false ? (this.itemView > 1 ? parseInt(this.swiperItem.innerWidth() / this.itemView) + 2 * this.between : this.swiperItem.innerWidth()) : this.swiperWidth;
-        this.swiperHeight = this.swiperHeight === false ? this.swiperItem.innerHeight() : this.swiperHeight;
-    } else if (this.mode === 'vertical') {
-        this.swiperWidth = this.swiperWidth === false ? this.swiperItem.innerWidth() : this.swiperWidth;
-        this.swiperHeight = this.swiperHeight === false ? (this.itemView > 1 ? parseInt(this.swiperItem.innerHeight() / this.itemView) + 2 * this.between : this.swiperItem.innerHeight()) : this.swiperHeight;
-    }
     
     this.swiperWH = this.mode === 'horizontal' ? this.swiperWidth : this.swiperHeight;
     
@@ -124,9 +123,9 @@ function Gswiper (opt) {
     this.eventMoveChk = false;
     this.eventClickChk = false;
     this.eventMouseUpChk = false; 
-    this.transitionIng = false;                                                                                                                     // 스와이프 끝났는지 체크
-    this.autoPlayChk = true;                                                                                                                        // 자동 롤링 체크
-
+    this.transitionIng = false;
+    this.autoPlayChk = true;
+    
     this.init();
 }
 
@@ -139,10 +138,6 @@ function Gswiper (opt) {
 
 Gswiper.prototype = {
     init : function() {
-
-        // 적용된 스와이프에 부모요소 추가
-        this.targetName.wrap('<div class="swiper-cont"></div>');
-
         // 기본 세팅 (스와이프, 버튼, 네비게이션)
         this.commonSet();
 
@@ -163,11 +158,8 @@ Gswiper.prototype = {
 
     // 기본 HTML 세팅
     commonSet : function() {
-        
-        var swiperWidth = this.mode === 'horizontal' ? (this.itemView > 1 ? this.swiperWidth * this.itemView + this.between  * 2 * (this.itemView - 1) : this.swiperWidth) : this.swiperWidth;
-        var swiperHeight = this.mode === 'vertical' ? (this.itemView > 1 ? this.swiperHeight * this.itemView + this.between  * 2 * (this.itemView - 1) : this.swiperHeight) : this.swiperHeight;
-        
-        this.swiperWrapper.css({'width': swiperWidth, 'height': swiperHeight}).find('.swiper-cont').css({'width': swiperWidth, 'height': swiperHeight});
+        // 적용된 스와이프에 부모요소 추가
+        this.targetName.wrap('<div class="swiper-cont"></div>');
 
         // 스와이프 아이템 세팅
         this.swiperItemSet();
@@ -179,22 +171,16 @@ Gswiper.prototype = {
         if (this.swiperBtn === true) {
             this.swiperBtnSet();
         } else {
-            this.swiperWrapper.find('.swiper-btn > button').css('display', 'none');
+            this.swiperWrapper.find('.swiper-btn > button').css({'display': 'none', 'opacity': 0, 'z-index': -1});
         };
-        
     },
 
     // 스와이프 아이템 세팅
     swiperItemSet : function() {
-
-        if (this.mode === 'horizontal') {
-            this.swiperItem.css({'width': this.swiperWidth});
-        } else if (this.mode === 'vertical') {
-            this.swiperItem.css({'height': this.swiperHeight});
-        }
-        
+        this.swiperItem.css({'width': this.swiperWidth, 'height': this.swiperHeight});
         this.swiperItem.css(this.swiperItemLT, this.between + 'px');
         this.swiperItem.css(this.swiperItemRB, this.between + 'px');
+        this.swiperItem.eq(this.viewIndex - 1).addClass('active');
 
         for (var i = 0; i <= this.swiperLength; i++) {
             this.swiperItem.eq(i).attr('slide-data', i);
@@ -202,11 +188,9 @@ Gswiper.prototype = {
 
         // 'loop'의 경우 클론
         if (this.loop === true) {
-
             for (var i = this.itemView; i > 0; i--) {
                 var fIndex = this.itemView - i; 
                 var first = i - (this.itemView + 1);
-                // console.log(this.targetName, fIndex, first);
                 var firstClone = this.swiperItem.not('.clone').eq(fIndex).clone().addClass('clone').attr('slide-data', first);
                 firstClone.appendTo(this.targetName);
             }
@@ -214,16 +198,10 @@ Gswiper.prototype = {
             for (var i = 0; i < this.itemView; i++) {
                 var lIndex = - (i + 1);
                 var last = i + this.swiperLength + 1;
-                // console.log(this.targetName, lIndex, last);
                 var lastClone = this.swiperItem.not('.clone').eq(lIndex).clone().addClass('clone').attr('slide-data', last);
                 lastClone.prependTo(this.targetName);
             }
-            
         }
-
-        // 활성화 아이템 클래스 추가
-        this.swiperItem.not('.clone').eq(this.viewIndex - 1).addClass('active');
-        
     },
 
     // 스와이프 버튼 세팅
@@ -232,13 +210,12 @@ Gswiper.prototype = {
         this.nextBtn = this.swiperWrapper.find('.next-btn');
 
         if (this.mergeTarget && this.mergeBtnHidden == 'hidden') {
-            this.swiperWrapper.find('.swiper-btn > button').css({'z-index' : -1, 'opacity' : 0})
+            this.swiperWrapper.find('.swiper-btn > button').css({'z-index' : -1, 'opacity' : 0});
         }
     },
 
     // swiper indicator 세팅
     swiperIndicatorSet : function() {
-        
         this.targetName.parents('.swiper-wrap').find('.swiper-indicator').append('<ul class="indicator-list"></ul>');
 
         // 인디케이터 타입 : dot
@@ -255,8 +232,8 @@ Gswiper.prototype = {
             if (this.mergeTarget && this.mergeDotHidden == 'hidden') {
                 $(this.swiperWrapper).find('.indicator-list').css({'z-index' : -1, 'opacity' : 0});
             }
-
         } 
+
         // 인디케이터 타입 : number
         else if (this.indicatorType === 'number') {
             if (this.mode === 'horizontal') {
@@ -267,6 +244,7 @@ Gswiper.prototype = {
             
             this.targetName.parents('.swiper-wrap').find('.indicator-list').append(this.indicatorNum);
         }
+
         // 인디케이터 타입 : bar
         else if(this.indicatorType === 'bar') {
             this.viewIndex = this.viewIndex > 0 ? this.viewIndex : 1;
@@ -425,6 +403,7 @@ Gswiper.prototype = {
         
         if (_this.mergeObj) {
             if (_this.viewIndex != _this.mergeObj.viewIndex) {
+                console.log(_this.mergeObj.curX)
                 _this.mergeObj.curX = - _this.mergeObj.swiperWidth * (_this.viewIndex + (_this.mergeObj.cloneLength)/2) - 2 * _this.mergeObj.between * (_this.viewIndex + (_this.mergeObj.cloneLength)/2) - _this.mergeObj.between;
                 _this.mergeObj.targetName.css(_this.mergeObj.transition_Property, _this.mergeObj.curX + 'px').find('> div').not('.clone').removeClass('active').eq(_this.viewIndex + 1).addClass('active');
                 _this.mergeObj.targetName[0].style.transitionProperty = _this.mergeObj.transition_Property;
@@ -558,9 +537,9 @@ Gswiper.prototype = {
             var _this = e.data;
         }
         
-        $(_this.targetName).on("transitionend webkitTransitionEnd", _this, function(e) {
+        $(_this.targetName).on("transitionend webkitTransitionEnd", _this, function(e) {
             _this.transitionIng = false;
-            $(_this.targetName).off("transitionend webkitTransitionEnd");
+            $(_this.targetName).off("transitionend webkitTransitionEnd");
 
             // console.log('스와이프 끝');
             if (_this.loop === true) {
@@ -730,7 +709,8 @@ Gswiper.prototype = {
         var cloneLength = _this.loop === true ? _this.cloneLength / 2 : 0;
         var num = _this.itemView % 2 ? 'odd' : 'even';                                              // 'odd' 홀수 / 'even' 짝수
         var itemView = num == 'even' ? (_this.itemView > 2 ? _this.itemView / 2 : 0) : parseInt(_this.itemView / 2);
-
+        
+        // var _valueAdd = _valueArray.reduce((a , b) => a + b);                                   // 배열 안 객체 합계
         // - _this.swiperWH * _this.curNavi - _this.swiperWH * _this.cloneLength - 2 * _this.between * _this.curNavi - 2 * _this.between * _this.cloneLength - _this.between
         _this.moveXY = - _this.swiperWH * (_this.curNavi + cloneLength) - _this.between * ( (2 * _this.curNavi) + (2 * cloneLength) + 1 ) + _this.swiperWH * itemView + 2 * _this.between * itemView;
 
