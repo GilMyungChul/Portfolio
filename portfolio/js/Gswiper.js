@@ -202,6 +202,8 @@ Gswiper.prototype = {
                 lastClone.prependTo(this.targetName);
             }
         }
+
+        this.swiperItem.removeClass('active').not('.clone').eq(this.viewIndex).addClass('active');
     },
 
     // 스와이프 버튼 세팅
@@ -266,17 +268,13 @@ Gswiper.prototype = {
 
     // 모드 세팅
     initMode : function() {
-        this.viewIndex = this.viewIndex > 1 ? this.viewIndex - 1 : 0;
-        this.cloneLength = this.loop === true ? 1 : 0;
-        var itemView = this.loop === true ? (this.itemView > 1 ? 1 : 0) : (this.itemView > 1 ? -1 : 0)
+        this.cloneLength = $(this.targetName).find('.clone').length;
+        var _cloneLength = this.loop === true ? this.cloneLength / 2 : 0;
+        var _itemView = parseInt(this.itemView / 2);
 
         // console.log('cloneLength :', this.cloneLength, '|| viewIndex :', this.viewIndex);
-        this.moveX = - this.swiperWidth * (this.viewIndex + this.cloneLength + itemView) - this.between * (2 * this.viewIndex + 2 * this.cloneLength + 1 + 2 * itemView);
-        this.moveY = - this.swiperHeight * (this.viewIndex + this.cloneLength + itemView) - this.between * (2 * this.viewIndex + 2 * this.cloneLength + 1 + 2 * itemView);
-        
-        this.cloneLength = $(this.targetName).find('.clone').length;
-
-        this.swiperItem.removeClass('active').not('.clone').eq(this.viewIndex).addClass('active');
+        this.moveX = - this.swiperWidth * (this.viewIndex + _cloneLength - _itemView) - 2 * this.between * (this.viewIndex + _cloneLength - _itemView) - this.between;
+        this.moveY = - this.swiperHeight * (this.viewIndex + _cloneLength - _itemView) - 2 * this.between * (this.viewIndex + _cloneLength - _itemView) - this.between;
 
         if (this.indicator === true) {
             this.indicatorDot.removeClass('active').eq(this.viewIndex).addClass('active');
@@ -328,11 +326,11 @@ Gswiper.prototype = {
     autoHeightInit : function() {
         if (this.autoHeight) {
             if (this.mode == 'horizontal') {
-                var swiperHeight = this.targetName.find('.slide-item').not('.clone').eq(this.curIndex).height();
-                this.swiperWrapper.css({'height': swiperHeight}).find('.swiper-cont').css({'height': swiperHeight});
+                var _swiperHeight = this.targetName.find('.slide-item').not('.clone').eq(this.curIndex).height();
+                this.swiperWrapper.css({'height': _swiperHeight}).find('.swiper-cont').css({'height': _swiperHeight});
             } else {
-                var swiperWidth = this.targetName.find('.slide-item').not('.clone').eq(this.curIndex).width();
-                this.swiperWrapper.css({'width': swiperWidth}).find('.swiper-cont').css({'width': swiperWidth});
+                var _swiperWidth = this.targetName.find('.slide-item').not('.clone').eq(this.curIndex).width();
+                this.swiperWrapper.css({'width': _swiperWidth}).find('.swiper-cont').css({'width': _swiperWidth});
             }
         }
     },
@@ -361,8 +359,8 @@ Gswiper.prototype = {
         _this.swiperEndChk(_this, true);
     },
 
-    // var locPageXY = _this.mode === 'horizontal' ? _this.pageX : _this.pageY;                                     클릭 시, 마우스 및 터치 좌표값
-    // var curPageXY = _this.mode === 'horizontal' ? _this.pageXY(e)[0] : _this.pageXY(e)[1];                       무브 시, 마우스 및 터치 좌표값
+    // var locPageXY                                                                 클릭 시, 마우스 및 터치 좌표값
+    // var curPageXY                                                                 무브 시, 마우스 및 터치 좌표값
 
     // 마우스, 터치 다운
     eventDown : function(e) {
@@ -403,8 +401,7 @@ Gswiper.prototype = {
         
         if (_this.mergeObj) {
             if (_this.viewIndex != _this.mergeObj.viewIndex) {
-                console.log(_this.mergeObj.curX)
-                _this.mergeObj.curX = - _this.mergeObj.swiperWidth * (_this.viewIndex + (_this.mergeObj.cloneLength)/2) - 2 * _this.mergeObj.between * (_this.viewIndex + (_this.mergeObj.cloneLength)/2) - _this.mergeObj.between;
+                _this.mergeObj.curX = - _this.mergeObj.swiperWidth * (_this.viewIndex + 1 + (_this.mergeObj.cloneLength / 2) - parseInt(_this.itemView / 2)) - 2 * _this.mergeObj.between * (_this.viewIndex + 1 + (_this.mergeObj.cloneLength / 2) - parseInt(_this.itemView / 2)) - _this.mergeObj.between;
                 _this.mergeObj.targetName.css(_this.mergeObj.transition_Property, _this.mergeObj.curX + 'px').find('> div').not('.clone').removeClass('active').eq(_this.viewIndex + 1).addClass('active');
                 _this.mergeObj.targetName[0].style.transitionProperty = _this.mergeObj.transition_Property;
                 _this.mergeObj.targetName[0].style.transitionDuration = _this.mergeObj.transition_Duration;
@@ -435,7 +432,7 @@ Gswiper.prototype = {
 
         if (_this.mergeObj) {
             if (_this.viewIndex != _this.mergeObj.viewIndex) {
-                _this.mergeObj.curX = - _this.mergeObj.swiperWidth * (_this.viewIndex + (_this.mergeObj.cloneLength)/2 - 2) - 2 * _this.mergeObj.between * (_this.viewIndex + (_this.mergeObj.cloneLength)/2 - 2) - _this.mergeObj.between;
+                _this.mergeObj.curX = - _this.mergeObj.swiperWidth * (_this.viewIndex - 1 + (_this.mergeObj.cloneLength / 2) - parseInt(_this.itemView / 2)) - 2 * _this.mergeObj.between * (_this.viewIndex - 1 + (_this.mergeObj.cloneLength / 2) - parseInt(_this.itemView / 2)) - _this.mergeObj.between;
                 _this.mergeObj.targetName.css(_this.mergeObj.transition_Property, _this.mergeObj.curX + 'px').find('> div').not('.clone').removeClass('active').eq(_this.viewIndex - 1).addClass('active');
                 _this.mergeObj.targetName[0].style.transitionProperty = _this.mergeObj.transition_Property;
                 _this.mergeObj.targetName[0].style.transitionDuration = _this.mergeObj.transition_Duration;
@@ -509,16 +506,16 @@ Gswiper.prototype = {
     eventMouseUpValue : function(e) {
         var _this = e.data;
         
-        var locPageXY = _this.mode === 'horizontal' ? _this.pageX : _this.pageY;                        // 마우스 다운 좌표값
-        var curPageXY = _this.mode === 'horizontal' ? _this.pageXY(e)[0] : _this.pageXY(e)[1];          // 마우스 무브 후 업 좌표값
-        var direction = locPageXY > curPageXY ? 'next' : 'prev';                                        // 좌/우 이동 감지
+        var _locPageXY = _this.mode === 'horizontal' ? _this.pageX : _this.pageY;                        // 마우스 다운 좌표값
+        var _curPageXY = _this.mode === 'horizontal' ? _this.pageXY(e)[0] : _this.pageXY(e)[1];          // 마우스 무브 후 업 좌표값
+        var _direction = _locPageXY > _curPageXY ? 'next' : 'prev';                                      // 좌&우 이동 감지
 
-        if (direction == 'next') {
-            if (curPageXY - _this.offsetXY > (locPageXY - _this.offsetXY) * 0.7) {
+        if (_direction == 'next') {
+            if (_curPageXY - _this.offsetXY > (_locPageXY - _this.offsetXY) * 0.7) {
                 _this.moveXY = _this.curXY;
             }
-        } else if (direction == 'prev') {
-            if (curPageXY - _this.offsetXY < (locPageXY - _this.offsetXY) / 0.7) {
+        } else if (_direction == 'prev') {
+            if (_curPageXY - _this.offsetXY < (_locPageXY - _this.offsetXY) / 0.7) {
                 _this.moveXY = _this.curXY;
             }
         }
@@ -540,16 +537,17 @@ Gswiper.prototype = {
         $(_this.targetName).on("transitionend webkitTransitionEnd", _this, function(e) {
             _this.transitionIng = false;
             $(_this.targetName).off("transitionend webkitTransitionEnd");
-
+            
             // console.log('스와이프 끝');
             if (_this.loop === true) {
-                // _this.moveXY = _this.itemView > 1 ? : - x * (2 + b) - y * (5 + b * 2) : - x * (1 + b) - y * (3 + b * 2)
+                var _itemView = _this.itemView > 1 ? parseInt(_this.itemView / 2) : _this.itemView;
+                
                 if (_this.curIndex == -1) {
-                    _this.moveXY = _this.itemView > 1 ? - _this.swiperWH * (_this.lastIndex + 2) - _this.between * (5 + _this.lastIndex * 2) : - _this.swiperWH * (_this.lastIndex + 1) - _this.between * (3 + _this.lastIndex * 2);
+                    _this.moveXY = - _this.swiperWH * (_this.lastIndex - _itemView + _this.cloneLength / 2) - 2 * _this.between * (_this.lastIndex - _itemView + _this.cloneLength / 2) - _this.between;
                     _this.transition_Duration = '0s';
                     _this.curIndex = _this.lastIndex;
                 } else if (_this.curIndex == _this.swiperLength) {
-                    _this.moveXY = _this.itemView > 1 ? - _this.swiperWH * (_this.firstIndex + 2) - _this.between * (5 + _this.firstIndex * 2) : - _this.swiperWH * (_this.firstIndex + 1) - _this.between * (3 + _this.firstIndex * 2);
+                    _this.moveXY = - _this.swiperWH * (_this.firstIndex - _itemView + _this.cloneLength / 2) - 2 * _this.between * (_this.firstIndex - _itemView + _this.cloneLength / 2) - _this.between;
                     _this.transition_Duration = '0s';
                     _this.curIndex = _this.firstIndex;
                 }
@@ -605,10 +603,10 @@ Gswiper.prototype = {
     nextEventValue : function(e) {
         var _this = e.data;
 
-        var locPageXY = _this.mode === 'horizontal' ? _this.pageX : _this.pageY;
-        var curPageXY = _this.mode === 'horizontal' ? _this.pageXY(e)[0] : _this.pageXY(e)[1];
+        var _locPageXY = _this.mode === 'horizontal' ? _this.pageX : _this.pageY;
+        var _curPageXY = _this.mode === 'horizontal' ? _this.pageXY(e)[0] : _this.pageXY(e)[1];
         
-        if (curPageXY - _this.offsetXY < (locPageXY - _this.offsetXY) * 0.7) {
+        if (_curPageXY - _this.offsetXY < (_locPageXY - _this.offsetXY) * 0.7) {
             _this.transition_Duration = _this.swiperSpeed;
             _this.moveXY = _this.curXY - _this.swiperWH - (_this.between * 2);
             _this.curIndex = _this.nextIndex;
@@ -624,7 +622,7 @@ Gswiper.prototype = {
 
         } else {
             _this.transition_Duration = '0s';
-            _this.moveXY = _this.curXY - ((locPageXY - _this.offsetXY) - (curPageXY - _this.offsetXY));
+            _this.moveXY = _this.curXY - ((_locPageXY - _this.offsetXY) - (_curPageXY - _this.offsetXY));
             _this.curIndex = _this.viewIndex;
         }
     },
@@ -633,10 +631,10 @@ Gswiper.prototype = {
     prevEventValue : function(e) {
         var _this = e.data;
 
-        var locPageXY = _this.mode === 'horizontal' ? _this.pageX : _this.pageY;
-        var curPageXY = _this.mode === 'horizontal' ? _this.pageXY(e)[0] : _this.pageXY(e)[1];
+        var _locPageXY = _this.mode === 'horizontal' ? _this.pageX : _this.pageY;
+        var _curPageXY = _this.mode === 'horizontal' ? _this.pageXY(e)[0] : _this.pageXY(e)[1];
 
-        if ( curPageXY - _this.offsetXY > (locPageXY - _this.offsetXY) / 0.7) {
+        if ( _curPageXY - _this.offsetXY > (_locPageXY - _this.offsetXY) / 0.7) {
             _this.transition_Duration = _this.swiperSpeed;
             _this.moveXY = _this.curXY + _this.swiperWH + (_this.between * 2);
             _this.curIndex = _this.prevIndex;
@@ -652,7 +650,7 @@ Gswiper.prototype = {
 
         } else {
             _this.transition_Duration = '0s';
-            _this.moveXY = _this.curXY + ((curPageXY - _this.offsetXY) - (locPageXY  - _this.offsetXY));
+            _this.moveXY = _this.curXY + ((_curPageXY - _this.offsetXY) - (_locPageXY  - _this.offsetXY));
             _this.curIndex = _this.viewIndex;
         }
     },
@@ -706,13 +704,13 @@ Gswiper.prototype = {
     // 인디케이터 값 세팅
     naviClickValue : function(e) {
         var _this = e;
-        var cloneLength = _this.loop === true ? _this.cloneLength / 2 : 0;
-        var num = _this.itemView % 2 ? 'odd' : 'even';                                              // 'odd' 홀수 / 'even' 짝수
-        var itemView = num == 'even' ? (_this.itemView > 2 ? _this.itemView / 2 : 0) : parseInt(_this.itemView / 2);
+        var _cloneLength = _this.loop === true ? _this.cloneLength / 2 : 0;
+        var _num = _this.itemView % 2 ? 'odd' : 'even';                                              // 'odd' 홀수 / 'even' 짝수
+        var _itemView = _num == 'even' ? (_this.itemView > 2 ? _this.itemView / 2 : 0) : parseInt(_this.itemView / 2);
         
         // var _valueAdd = _valueArray.reduce((a , b) => a + b);                                   // 배열 안 객체 합계
         // - _this.swiperWH * _this.curNavi - _this.swiperWH * _this.cloneLength - 2 * _this.between * _this.curNavi - 2 * _this.between * _this.cloneLength - _this.between
-        _this.moveXY = - _this.swiperWH * (_this.curNavi + cloneLength) - _this.between * ( (2 * _this.curNavi) + (2 * cloneLength) + 1 ) + _this.swiperWH * itemView + 2 * _this.between * itemView;
+        _this.moveXY = - _this.swiperWH * (_this.curNavi + _cloneLength) - _this.between * ( (2 * _this.curNavi) + (2 * _cloneLength) + 1 ) + _this.swiperWH * _itemView + 2 * _this.between * _itemView;
 
         _this.transition_Duration = _this.swiperSpeed;
         _this.curIndex = _this.curNavi;
