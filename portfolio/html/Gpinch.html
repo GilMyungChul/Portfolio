@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <title>PINCHZOOM PLUGIN</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+        <meta name="format-detection" content="telephone=no" />
+        <script type="text/javascript" src="../js/jquery-1.12.4.min.js"></script>
+        <script type="text/javascript" src="../js/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="../js/pinchZoom.js"></script>
+        <link rel="stylesheet" href="../css/reset.css">
+        <link rel="stylesheet" href="../css/pinchZoom.css">        
+    </head>
+    <body>
+        <div class="wrap">
+            <div class="title"><p>PINCHZOOM</p></div>
+            <div class="pinch-wrap pinch-one">
+                <div class="pinch-list">
+                    <div class="pinch-item">
+                        <img src="../img/Image.png" alt="00">
+                    </div>
+                </div>
+            </div>
+
+            <div class="pinch-wrap pinch-two">
+                <div class="pinch-list">
+                    <div class="pinch-item">
+                        <img src="../img/Image02.png" alt="00">
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <script type="text/javascript">
+            var PinchOne = $('.pinch-one').Gpinch({
+                // mode: 'hover',                                   // 모드지정 - pinch(클릭으로 이미지 확대), hover(마우스오버로 이미지 확대)
+            })
+
+            var PinchOne = $('.pinch-two').Gpinch({
+                mode: 'hover',
+            })
+        </script>
+    </body>
+</html>
