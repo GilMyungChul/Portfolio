@@ -1,28 +1,31 @@
 'use strict'
 
 /*** 스와이프 플러그인 제작
-  ====================== ver 0.0 ======================
-    * 2021-03-12 
-      - swiper slide 플러그인 제작
-  ====================== ver 1.0 ======================
-    * 2021-03-31
-      - 'horizontal', 'vertical' 스와이프 적용
-      - 인디케이터 종류 2가지 추가 ('number', 'bar')
-    * 2021-04-02
-      - object clone에 마진값 추가
-      - 마진값 추가로 인한 이벤트 적용값 수정
-  ====================== ver 1.1 ======================
-    * 2021-04-07
-      - 스와이프 영역에 보여지는 object의 개수를 사용자가 지정할 수 있도록 설정
-      - 스와이프 영역에 보여지는 object의 개수만큼 clone 생성 그에 따른 적용값 설정
-      - 사용자가 css로 지정하는 width, height값을 제외한 스크립트로 지정하는 값이 없을 때, 자동적으로 상황에 맞게 설정 
-  ====================== ver 1.1 ======================
-    * 2021-04-07
-      - autoPlay 추가
-      - 인디케이터, 버튼을 통한 동시 스와이프 추가
-    * 2021-05-25
-      - 2개 이상의 동시 스와이프 기능 추가
-      - mouseenter / mouseleave로 autoPlay 컨트롤
+    ====================== ver 0.0 ======================
+        * 2021-03-12 
+        - swiper 플러그인 제작
+    ====================== ver 1.0 ======================
+        * 2021-03-31
+        - 'horizontal', 'vertical' 스와이프 적용
+        - 인디케이터 종류 2가지 추가 ('number', 'bar')
+        * 2021-04-02
+        - object clone에 마진값 추가
+        - 마진값 추가로 인한 이벤트 적용값 수정
+    ====================== ver 1.1 ======================
+        * 2021-04-07
+        - 스와이프 영역에 보여지는 object의 개수를 사용자가 지정할 수 있도록 설정
+        - 스와이프 영역에 보여지는 object의 개수만큼 clone 생성 그에 따른 적용값 설정
+        - 사용자가 css로 지정하는 width, height값을 제외한 스크립트로 지정하는 값이 없을 때, 자동적으로 상황에 맞게 설정 
+    ====================== ver 1.1 ======================
+        * 2021-04-07
+        - autoPlay 추가
+        - 인디케이터, 버튼을 통한 동시 스와이프 추가
+        * 2021-05-25
+        - 2개가 동시에 스와이프 되는 조건 설정
+        - mouseenter / mouseleave로 autoPlay 컨트롤
+    ====================== ver 1.1 ======================
+        * 2021-08-27
+        - 일부 소스 변경
 ***/
 
 function Gswiper (opt) {
@@ -32,7 +35,7 @@ function Gswiper (opt) {
     this.evtTypeEnd = document.ontouchstart !== null ? 'mouseup' : 'touchend';                                                                      // 모바일, PC 구분 끝 이벤트
 
     this.pageXY = function(e) {
-        var pageX = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageY : e.originalEvent.pageX;                               // swiper X축
+        var pageX = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageX : e.originalEvent.pageX;                               // swiper X축
         var pageY = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageY : e.originalEvent.pageY;                               // swiper Y축
         var pageXY = new Array(pageX, pageY);
 
@@ -53,6 +56,7 @@ function Gswiper (opt) {
     this.ingSwiperNot = opt.ingSwiperNot || false;                                                                                                  // 스와이프 중 이벤트 막기 : false (default)
     this.itemView = opt.itemView || 1;                                                                                                              // 스와이프 영역에서 한번에 몇개의 스와이프를 노출 할지 결정 : 1 (default)
     this.itemViewSwiper = this.itemView > 1 ? (opt.itemViewSwiper > this.itemView ? this.itemView : opt.itemViewSwiper) : 1;                        // 노출되는 스와이프가 2개 이상이 경우 스와이프가 되는 개수 결정 : this.itemView (default)
+    this.useCss = opt.useCss || false;                                                                                                              // 사용자가 지정된 css값을 사용하게 설정 : false (default)
     
     this.mergeTarget = opt.mergeTarget || false;                                                                                                    // 동시 스와이프 : 부모 스와이프
     this.mergeObj;                                                                                                                                  // 동시 스와이프 : 부모 스와이프에 자식 스와이프 데이터값 추가
@@ -67,15 +71,10 @@ function Gswiper (opt) {
     this.valueOther = opt.valueOther || false;                                                                                                      // width, height 각 스와이프 오브젝트 마다 다른 경우 : true (default), false
     
     this.swiperWrapper = this.targetName.closest('.swiper-wrap');
-    this.swiperItem = this.targetName.find('.slide-item');
+    this.swiperItem = this.targetName.find('.swiper-item');
 
-    if (this.mode === 'horizontal') {
-        this.swiperWidth = this.itemView > 1 ? (this.swiperWrapper.width() - 2 * this.between * (this.itemView - 1)) / this.itemView : this.swiperWrapper.width();
-        this.swiperHeight = this.swiperWrapper.height();
-    } else if (this.mode === 'vertical') {
-        this.swiperWidth = this.swiperWrapper.width();
-        this.swiperHeight = this.itemView > 1 ? (this.swiperWrapper.height()) - 2 * this.between  * (this.itemView - 1) / this.itemView : this.swiperWrapper.height();
-    }
+    this.swiperWidth = this.swiperItem.width();
+    this.swiperHeight = this.swiperItem.height();
 
     this.prevBtn;
     this.nextBtn;
@@ -91,7 +90,7 @@ function Gswiper (opt) {
     this.moveY;
     this.moveXY;
     
-    this.swiperWH = this.mode === 'horizontal' ? this.swiperWidth : this.swiperHeight;
+    this.swiperWH;
     
     this.swiperLength = this.targetName[0].childElementCount;
     this.cloneLength;
@@ -100,8 +99,8 @@ function Gswiper (opt) {
     this.offsetY = this.swiperWrapper.offset().top;
     this.offsetXY = this.mode === 'horizontal' ? this.offsetX : this.offsetY;
     
-    this.curX = this.targetName.position().left;
-    this.curY = this.targetName.position().top;
+    this.curX
+    this.curY
     this.curXY;
     
     this.curNavi;
@@ -138,36 +137,60 @@ function Gswiper (opt) {
 
 Gswiper.prototype = {
     init : function() {
-        // 기본 세팅 (스와이프, 버튼, 네비게이션)
+        // set default width value
+        this.initWH();
+
+        // basics setting (swiper, indicator, button)
         this.commonSet();
 
-        // 'horizontal', 'vertical', 'scroll' 세팅
+        // 'horizontal', 'vertical', 'scroll'
         this.initMode();
 
-        // 이벤트 적용 목록
+        // event list
         this.eventBox();
 
-        // 자동롤링
+        // auto rolling
         this.autoPlayInit();
 
-        // 동시 스와이프
+        // simultaneous swipe
         if (this.mergeTarget) {
             this.mergeTarget.mergeObj = this;
         }
     },
 
-    // 기본 HTML 세팅
+    // set default width value
+    initWH : function() {
+        
+        if(!this.useCss) {
+            if (this.mode === 'horizontal') {
+                this.swiperWidth = this.itemView > 1 ? (this.swiperWrapper.width() - 2 * this.between * (this.itemView - 1)) / this.itemView : this.swiperWrapper.width();
+                this.swiperHeight = this.swiperWrapper.height();
+            } else if (this.mode === 'vertical') {
+                this.swiperWidth = this.swiperWrapper.width();
+                this.swiperHeight = this.itemView > 1 ? (this.swiperWrapper.height()) - 2 * this.between  * (this.itemView - 1) / this.itemView : this.swiperWrapper.height();
+            }
+        }
+
+        this.swiperWH = this.mode === 'horizontal' ? this.swiperWidth : this.swiperHeight;
+        $('.swiper-item', this.targetName).css({'width': this.swiperWidth, 'height': this.swiperHeight});
+        $('.swiper-item', this.targetName).css(this.swiperItemLT, this.between + 'px');
+        $('.swiper-item', this.targetName).css(this.swiperItemRB, this.between + 'px');
+    },
+
+    // basics setting (swiper, indicator, button)
     commonSet : function() {
-        // 적용된 스와이프에 부모요소 추가
+        // add parent element to swipe
         this.targetName.wrap('<div class="swiper-cont"></div>');
 
-        // 스와이프 아이템 세팅
+        // swipe items set
         this.swiperItemSet();
 
-        // 스와이프 인디케이터 세팅
-        if (this.indicator === true) {this.swiperIndicatorSet();};
+        // swipe indicator set
+        if (this.indicator === true) {
+            this.swiperIndicatorSet();
+        };
 
-        // 스와이프 버튼
+        // swipe button set
         if (this.swiperBtn === true) {
             this.swiperBtnSet();
         } else {
@@ -175,30 +198,26 @@ Gswiper.prototype = {
         };
     },
 
-    // 스와이프 아이템 세팅
+    // swipe items set
     swiperItemSet : function() {
-        this.swiperItem.css({'width': this.swiperWidth, 'height': this.swiperHeight});
-        this.swiperItem.css(this.swiperItemLT, this.between + 'px');
-        this.swiperItem.css(this.swiperItemRB, this.between + 'px');
-        this.swiperItem.eq(this.viewIndex - 1).addClass('active');
-
+        
         for (var i = 0; i <= this.swiperLength; i++) {
-            this.swiperItem.eq(i).attr('slide-data', i);
+            this.swiperItem.eq(i).attr('swiper-data', i);
         }
 
-        // 'loop'의 경우 클론
+        // clone for 'loop'
         if (this.loop === true) {
             for (var i = this.itemView; i > 0; i--) {
                 var fIndex = this.itemView - i; 
                 var first = i - (this.itemView + 1);
-                var firstClone = this.swiperItem.not('.clone').eq(fIndex).clone().addClass('clone').attr('slide-data', first);
+                var firstClone = this.swiperItem.not('.clone').eq(fIndex).clone().addClass('clone').attr('swiper-data', first);
                 firstClone.appendTo(this.targetName);
             }
             
             for (var i = 0; i < this.itemView; i++) {
                 var lIndex = - (i + 1);
                 var last = i + this.swiperLength + 1;
-                var lastClone = this.swiperItem.not('.clone').eq(lIndex).clone().addClass('clone').attr('slide-data', last);
+                var lastClone = this.swiperItem.not('.clone').eq(lIndex).clone().addClass('clone').attr('swiper-data', last);
                 lastClone.prependTo(this.targetName);
             }
         }
@@ -206,7 +225,7 @@ Gswiper.prototype = {
         this.swiperItem.removeClass('active').not('.clone').eq(this.viewIndex).addClass('active');
     },
 
-    // 스와이프 버튼 세팅
+    // swipe button set
     swiperBtnSet : function() {
         this.prevBtn = this.swiperWrapper.find('.prev-btn');
         this.nextBtn = this.swiperWrapper.find('.next-btn');
@@ -216,27 +235,27 @@ Gswiper.prototype = {
         }
     },
 
-    // swiper indicator 세팅
+    // swipe indicator set
     swiperIndicatorSet : function() {
-        this.targetName.parents('.swiper-wrap').find('.swiper-indicator').append('<ul class="indicator-list"></ul>');
+        this.swiperWrapper.find('.swiper-indicator').append('<ul class="indicator-list"></ul>');
 
-        // 인디케이터 타입 : dot
+        // indicator type : dot
         if (this.indicatorType === 'dot') {
             for (var i = 0; i <= this.swiperLength - 1; i++) {
                 this.indicatorDot = '<li class="indicator-items" indicator-data="' + i + '">' + (i + 1) + '</li>';
-                this.targetName.parents('.swiper-wrap').find('.indicator-list').append(this.indicatorDot);
+                this.swiperWrapper.find('.indicator-list').append(this.indicatorDot);
             }
 
-            // 'dot' 인디케이터 클래스 추가
+            // 'dot' indicator calss add
             this.swiperWrapper.find('> .indicator-items').eq(this.viewIndex).addClass('active');
 
-            // 동시 스와이프를 사용할 때, 자식의 스와이프 인디케이터 숨김
+            // hide your child`s swipe indicator when using a concurrent swipe
             if (this.mergeTarget && this.mergeDotHidden == 'hidden') {
                 $(this.swiperWrapper).find('.indicator-list').css({'z-index' : -1, 'opacity' : 0});
             }
         } 
 
-        // 인디케이터 타입 : number
+        // indicator type : number
         else if (this.indicatorType === 'number') {
             if (this.mode === 'horizontal') {
                 this.indicatorNum = '<li class="indicator-num"><span class="indicator-cur">' + this.viewIndex + '</span> / <span class="indicator-max">' + this.swiperLength + '</span></li>';
@@ -244,10 +263,10 @@ Gswiper.prototype = {
                 this.indicatorNum = '<li class="indicator-num"><span class="indicator-cur">' + this.viewIndex + '</span><br> / <br><span class="indicator-max">' + this.swiperLength + '</span></li>';
             }
             
-            this.targetName.parents('.swiper-wrap').find('.indicator-list').append(this.indicatorNum);
+            this.swiperWrapper.find('.indicator-list').append(this.indicatorNum);
         }
 
-        // 인디케이터 타입 : bar
+        // indicator type : bar
         else if(this.indicatorType === 'bar') {
             this.viewIndex = this.viewIndex > 0 ? this.viewIndex : 1;
             
@@ -262,23 +281,21 @@ Gswiper.prototype = {
         }
 
         this.indicatorDot = this.swiperWrapper.find('.indicator-items');
-        this.indicatorNum = this.swiperWrapper.find('.indicator-num')
-        this.indicatorBar = this.swiperWrapper.find('.indicator-bar')
+        this.indicatorNum = this.swiperWrapper.find('.indicator-num');
+        this.indicatorBar = this.swiperWrapper.find('.indicator-bar');
     },
 
-    // 모드 세팅
+    // mode set
     initMode : function() {
         this.cloneLength = $(this.targetName).find('.clone').length;
         var _cloneLength = this.loop === true ? this.cloneLength / 2 : 0;
-        var _itemView = parseInt(this.itemView / 2);
 
-        // console.log('cloneLength :', this.cloneLength, '|| viewIndex :', this.viewIndex);
-        this.moveX = - this.swiperWidth * (this.viewIndex + _cloneLength - _itemView) - 2 * this.between * (this.viewIndex + _cloneLength - _itemView) - this.between;
-        this.moveY = - this.swiperHeight * (this.viewIndex + _cloneLength - _itemView) - 2 * this.between * (this.viewIndex + _cloneLength - _itemView) - this.between;
+        this.moveX = - this.swiperWidth * (this.viewIndex + _cloneLength) - 2 * this.between * (this.viewIndex + _cloneLength) - this.between;
+        this.moveY = - this.swiperHeight * (this.viewIndex + _cloneLength) - 2 * this.between * (this.viewIndex + _cloneLength) - this.between;
 
         if (this.indicator === true) {
             this.indicatorDot.removeClass('active').eq(this.viewIndex).addClass('active');
-            this.indicatorNum.find('.indicator-cur').html(this.viewIndex + 1)
+            this.indicatorNum.find('.indicator-cur').html(this.viewIndex + 1);
         }
 
         if (this.mode === 'horizontal') {
@@ -288,54 +305,64 @@ Gswiper.prototype = {
         }
     },
 
-    // horizontal swiper 세팅
+    // horizontal swipe set
     horizontalSet : function() {
         this.targetName.css({'width': (this.swiperWidth + this.between * 2) * (this.swiperLength + this.cloneLength) + 'px' , 'height': this.swiperHeight + 'px'});
         this.targetName.css('left', this.moveX + 'px');
     },
 
-    // vertical swiper 세팅
+    // vertical swipe set
     verticalSet : function() {
         this.targetName.css({'width': this.swiperWidth + 'px' , 'height': (this.swiperHeight + this.between * 2) * (this.swiperLength + this.cloneLength) + 'px'});
         this.targetName.css('top', this.moveY + 'px');
     },
 
+    // event list
     eventBox : function() {
         var _this = this;
 
         $(_this.targetName)
-            .off(_this.evtTypeStart).on(_this.evtTypeStart, _this, function(e){_this.eventDown(e)})
-            .off(_this.evtTypeMove).on(_this.evtTypeMove, _this, function(e){_this.eventMove(e)})
-            .off(_this.evtTypeEnd).on(_this.evtTypeEnd, _this, function(e){_this.eventUp(e)});
+            .unbind(_this.evtTypeStart).bind(_this.evtTypeStart, _this, function(e){_this.eventDown(e)})
+            .unbind(_this.evtTypeMove).bind(_this.evtTypeMove, _this, function(e){_this.eventMove(e)})
+            .unbind(_this.evtTypeEnd).bind(_this.evtTypeEnd, _this, function(e){_this.eventUp(e)});
 
         $(_this.swiperWrapper)
-            .off('mouseenter').on('mouseenter', _this, function(e){_this.mouseEnter(e)})
-            .off('mouseleave').on('mouseleave', _this, function(e){_this.mouseLeave(e)});
+            .unbind('mouseenter').bind('mouseenter', _this, function(e){_this.mouseEnter(e)})
+            .unbind('mouseleave').bind('mouseleave', _this, function(e){_this.mouseLeave(e)});
             
         if (_this.swiperBtn === true) {
-            _this.nextBtn.on('click', _this, function(e){_this.nextBtnClick(e)});
-            _this.prevBtn.on('click', _this, function(e){_this.prevBtnClick(e)});
+            _this.nextBtn.bind('click', _this, function(e){_this.nextBtnClick(e)});
+            _this.prevBtn.bind('click', _this, function(e){_this.prevBtnClick(e)});
         }
 
         if (_this.indicator === true) {
-            $(_this.indicatorDot).on('click', _this, _this.naviClick);
+            $(_this.indicatorDot).bind('click', _this, _this.naviClick);
         }
+
+        $(window).bind('resize', function(){_this.windowResize();})
         
     },
 
+    // window resize set
+    windowResize : function() {
+        this.initWH();
+        this.initMode();
+    },
+
+    // auto height set
     autoHeightInit : function() {
         if (this.autoHeight) {
             if (this.mode == 'horizontal') {
-                var _swiperHeight = this.targetName.find('.slide-item').not('.clone').eq(this.curIndex).height();
+                var _swiperHeight = this.targetName.find('.swiper-item').not('.clone').eq(this.curIndex).height();
                 this.swiperWrapper.css({'height': _swiperHeight}).find('.swiper-cont').css({'height': _swiperHeight});
             } else {
-                var _swiperWidth = this.targetName.find('.slide-item').not('.clone').eq(this.curIndex).width();
+                var _swiperWidth = this.targetName.find('.swiper-item').not('.clone').eq(this.curIndex).width();
                 this.swiperWrapper.css({'width': _swiperWidth}).find('.swiper-cont').css({'width': _swiperWidth});
             }
         }
     },
 
-    // 자동 롤링 init
+    // auto rolling set
     autoPlayInit : function() {
         var _this = this;
         if (_this.autoPlay == true) {
@@ -343,12 +370,12 @@ Gswiper.prototype = {
         }
     },
 
-    // 자동 롤링 이벤트 세팅값
+    // auto rolling value set
     autoPlayEvent : function() {
         var _this = this;
         
-        _this.curX = parseInt(_this.targetName.position().left);
-        _this.curY = parseInt(_this.targetName.position().top);
+        _this.curX = _this.targetName[0].offsetLeft;
+        _this.curY = _this.targetName[0].offsetTop;
         _this.curXY = _this.mode === 'horizontal' ? _this.curX : _this.curY;
 
         _this.prevIndex = _this.viewIndex - 1;
@@ -362,7 +389,7 @@ Gswiper.prototype = {
     // var locPageXY                                                                 클릭 시, 마우스 및 터치 좌표값
     // var curPageXY                                                                 무브 시, 마우스 및 터치 좌표값
 
-    // 마우스, 터치 다운
+    // mousedown, touchstart
     eventDown : function(e) {
         var _this = e.data;
         
@@ -375,16 +402,15 @@ Gswiper.prototype = {
         
         _this.objectDataValue(e);
         clearTimeout(_this.autoPlaySet);
-        
     },
 
-    // 마우스, 터치 무브
+    // mousemove, touchmove
     eventMove : function(e) {
         var _this = e.data;
         if (_this.eventMoveChk === true) {_this.pageDragValue(e);}
     },
 
-    // 마우스, 터치 업
+    // mouseup, touchend
     eventUp : function(e) {
         var _this = e.data;
 
@@ -395,18 +421,14 @@ Gswiper.prototype = {
         _this.swiperEndChk(e);
     },
 
-    // '다음'버튼
+    // next button
     nextBtnClick : function(e) {
         var _this = e.data;
         
         if (_this.mergeObj) {
+            var obj = 'next';
             if (_this.viewIndex != _this.mergeObj.viewIndex) {
-                _this.mergeObj.curX = - _this.mergeObj.swiperWidth * (_this.viewIndex + 1 + (_this.mergeObj.cloneLength / 2) - parseInt(_this.itemView / 2)) - 2 * _this.mergeObj.between * (_this.viewIndex + 1 + (_this.mergeObj.cloneLength / 2) - parseInt(_this.itemView / 2)) - _this.mergeObj.between;
-                _this.mergeObj.targetName.css(_this.mergeObj.transition_Property, _this.mergeObj.curX + 'px').find('> div').not('.clone').removeClass('active').eq(_this.viewIndex + 1).addClass('active');
-                _this.mergeObj.targetName[0].style.transitionProperty = _this.mergeObj.transition_Property;
-                _this.mergeObj.targetName[0].style.transitionDuration = _this.mergeObj.transition_Duration;
-
-                $(_this.mergeObj.indicatorDot).removeClass('active').eq(_this.viewIndex + 1).addClass('active');
+                _this.mergeObjValue(e, obj);
             } else {
                 $(_this.mergeObj.nextBtn).trigger('click');
             }
@@ -426,18 +448,14 @@ Gswiper.prototype = {
         _this.swiperEndChk(e);
     },
 
-    // '이전'버튼
+    // prev button
     prevBtnClick : function(e) {
         var _this = e.data;
 
         if (_this.mergeObj) {
+            var obj = 'prev';
             if (_this.viewIndex != _this.mergeObj.viewIndex) {
-                _this.mergeObj.curX = - _this.mergeObj.swiperWidth * (_this.viewIndex - 1 + (_this.mergeObj.cloneLength / 2) - parseInt(_this.itemView / 2)) - 2 * _this.mergeObj.between * (_this.viewIndex - 1 + (_this.mergeObj.cloneLength / 2) - parseInt(_this.itemView / 2)) - _this.mergeObj.between;
-                _this.mergeObj.targetName.css(_this.mergeObj.transition_Property, _this.mergeObj.curX + 'px').find('> div').not('.clone').removeClass('active').eq(_this.viewIndex - 1).addClass('active');
-                _this.mergeObj.targetName[0].style.transitionProperty = _this.mergeObj.transition_Property;
-                _this.mergeObj.targetName[0].style.transitionDuration = _this.mergeObj.transition_Duration;
-
-                $(_this.mergeObj.indicatorDot).removeClass('active').eq(_this.viewIndex - 1).addClass('active');
+                _this.mergeObjValue(e, obj);
             } else {
                 $(_this.mergeObj.prevBtn).trigger('click');
             }
@@ -457,7 +475,20 @@ Gswiper.prototype = {
         _this.swiperEndChk(e);
     },
 
-    // 인디케이터
+    // Simultaneous value merge
+    mergeObjValue : function(e, obj) {
+        var _this = this;
+        var mergeIndex = obj === 'next' ? _this.viewIndex + 1 : _this.viewIndex - 1;
+
+        _this.mergeObj.curX = - _this.mergeObj.swiperWidth * (mergeIndex + (_this.mergeObj.cloneLength / 2)) - 2 * _this.mergeObj.between * (mergeIndex + (_this.mergeObj.cloneLength / 2)) - _this.mergeObj.between;
+        _this.mergeObj.targetName.css(_this.mergeObj.transition_Property, _this.mergeObj.curX + 'px').find('> div').not('.clone').removeClass('active').eq(mergeIndex).addClass('active');
+        _this.mergeObj.targetName[0].style.transitionProperty = _this.mergeObj.transition_Property;
+        _this.mergeObj.targetName[0].style.transitionDuration = _this.mergeObj.transition_Duration;
+
+        $(_this.mergeObj.indicatorDot).removeClass('active').eq(mergeIndex).addClass('active');
+    },
+
+    // indicator
     naviClick : function(e) {
         var _this = e.data;
 
@@ -476,33 +507,31 @@ Gswiper.prototype = {
         _this.swiperEndChk(e);
     },
 
-    // autoPlay 중시
+    // autoPlay stop
     mouseEnter : function() {
         this.autoPlayChk = false;
     },
 
-    // autoPlay 시작
+    // autoPlay start
     mouseLeave : function() {
         this.autoPlayChk = true;
         this.autoPlayInit();
     },
 
-    // 스와이프 데이터 값
+    // swipe data value
     objectDataValue : function(e) {
         var _this = e.data;
-        
-        _this.curX = parseInt(_this.targetName.position().left);
-        _this.curY = parseInt(_this.targetName.position().top);
+
+        _this.curX = _this.targetName[0].offsetLeft;
+        _this.curY = _this.targetName[0].offsetTop;
         _this.curXY = _this.mode === 'horizontal' ? _this.curX : _this.curY;
 
         _this.prevIndex = _this.viewIndex - 1;
         _this.curIndex = _this.viewIndex;
         _this.nextIndex = _this.viewIndex + 1;
-        
-        // console.log('_this.prevIndex : ' + _this.prevIndex , '\n_this.curIndex : ' + _this.curIndex , '\n_this.nextIndex : ' + _this.nextIndex , '\n_this.firstIndex : ' + _this.firstIndex , '\n_this.viewIndex : ' + _this.viewIndex , '\n_this.lastIndex : ' + _this.lastIndex);
     },
 
-    // 드래그의 30%로 넘어가지 않으면 다시 스와이프 제자리로 설정
+    // return for move value 30per not over
     eventMouseUpValue : function(e) {
         var _this = e.data;
         
@@ -525,7 +554,7 @@ Gswiper.prototype = {
         
     },
 
-    // 스와이퍼 끝나는 시점 체크 & 자동 스와이퍼 실행
+    // swipe end check, auto rolling return value
     swiperEndChk : function(e, _obj) {
 
         if (_obj) {
@@ -534,20 +563,20 @@ Gswiper.prototype = {
             var _this = e.data;
         }
         
-        $(_this.targetName).on("transitionend webkitTransitionEnd", _this, function(e) {
+        $(_this.targetName).bind("transitionend webkitTransitionEnd", _this, function(e) {
             _this.transitionIng = false;
-            $(_this.targetName).off("transitionend webkitTransitionEnd");
+            $(_this.targetName).unbind("transitionend webkitTransitionEnd");
             
-            // console.log('스와이프 끝');
             if (_this.loop === true) {
-                var _itemView = _this.itemView > 1 ? parseInt(_this.itemView / 2) : _this.itemView;
+                // var _itemView = _this.itemView > 1 ? parseInt(_this.itemView / 2) : _this.itemView;
+                var _cloneLength = _this.itemView > 1 ? _this.cloneLength / 2 : _this.cloneLength
                 
                 if (_this.curIndex == -1) {
-                    _this.moveXY = - _this.swiperWH * (_this.lastIndex - _itemView + _this.cloneLength / 2) - 2 * _this.between * (_this.lastIndex - _itemView + _this.cloneLength / 2) - _this.between;
+                    _this.moveXY = - _this.swiperWH * (_this.lastIndex + _cloneLength) - 2 * _this.between * (_this.lastIndex + _cloneLength) - _this.between;
                     _this.transition_Duration = '0s';
                     _this.curIndex = _this.lastIndex;
                 } else if (_this.curIndex == _this.swiperLength) {
-                    _this.moveXY = - _this.swiperWH * (_this.firstIndex - _itemView + _this.cloneLength / 2) - 2 * _this.between * (_this.firstIndex - _itemView + _this.cloneLength / 2) - _this.between;
+                    _this.moveXY = - _this.swiperWH * (_this.firstIndex + _cloneLength) - 2 * _this.between * (_this.firstIndex + _cloneLength) - _this.between;
                     _this.transition_Duration = '0s';
                     _this.curIndex = _this.firstIndex;
                 }
@@ -557,9 +586,11 @@ Gswiper.prototype = {
                 } else if (_this.curIndex == _this.lastIndex) {
                     _this.curIndex = _this.lastIndex;
                 }
-            } 
+            }; 
             
             if (_this.loop === false && _this.autoPlay === true) {
+
+                console.log('asdasd')
                 
                 if (_this.curIndex == _this.lastIndex) {
                     _this.moveXY = -_this.between;
@@ -567,9 +598,10 @@ Gswiper.prototype = {
                     _this.curIndex = 0;
                     _this.indexValue(e);
                 }
-            }
+            };
             
             _this.viewIndex = _this.curIndex;
+            // _this.curX = _this.moveXY
             _this.objectDataValue(e);
             _this.swiperMoveValue(_this);
 
@@ -577,11 +609,11 @@ Gswiper.prototype = {
                 _this.autoPlayInit(e);
             } else {
                 clearTimeout(_this.autoPlaySet);
-            }
+            };
         })
     },
 
-    // 드래그 공통 값 세팅
+    // move common value set
     pageDragValue : function(e) {
         var _this = e.data;
 
@@ -599,7 +631,7 @@ Gswiper.prototype = {
         
     },
 
-    // 드래그 '다음' 값 세팅
+    // next move value set
     nextEventValue : function(e) {
         var _this = e.data;
 
@@ -627,7 +659,7 @@ Gswiper.prototype = {
         }
     },
 
-    // 드래그 '이전' 값 세팅
+    // prev move value set
     prevEventValue : function(e) {
         var _this = e.data;
 
@@ -655,7 +687,7 @@ Gswiper.prototype = {
         }
     },
 
-    // '다음' 버튼 값 세팅
+    // next button value set
     nextBtnValue : function(e, _obj) {
         if (_obj) {
             var _this = e;
@@ -680,7 +712,7 @@ Gswiper.prototype = {
         _this.indexValue(_this);
     },
 
-    // '이전' 버튼 값 세팅
+    // prev button value set
     prevBtnValue : function(e) {
         var _this = e;
 
@@ -701,16 +733,15 @@ Gswiper.prototype = {
         _this.indexValue(_this);
     },
 
-    // 인디케이터 값 세팅
+    // indicator value set
     naviClickValue : function(e) {
         var _this = e;
         var _cloneLength = _this.loop === true ? _this.cloneLength / 2 : 0;
         var _num = _this.itemView % 2 ? 'odd' : 'even';                                              // 'odd' 홀수 / 'even' 짝수
         var _itemView = _num == 'even' ? (_this.itemView > 2 ? _this.itemView / 2 : 0) : parseInt(_this.itemView / 2);
         
-        // var _valueAdd = _valueArray.reduce((a , b) => a + b);                                   // 배열 안 객체 합계
-        // - _this.swiperWH * _this.curNavi - _this.swiperWH * _this.cloneLength - 2 * _this.between * _this.curNavi - 2 * _this.between * _this.cloneLength - _this.between
-        _this.moveXY = - _this.swiperWH * (_this.curNavi + _cloneLength) - _this.between * ( (2 * _this.curNavi) + (2 * _cloneLength) + 1 ) + _this.swiperWH * _itemView + 2 * _this.between * _itemView;
+        // var _valueAdd = _valueArray.reduce((a , b) => a + b);                                     // 배열 안 객체 합계
+        _this.moveXY = - _this.swiperWH * (_this.curNavi + _cloneLength) - _this.between * ( (2 * _this.curNavi) + (2 * _cloneLength) + 1 );
 
         _this.transition_Duration = _this.swiperSpeed;
         _this.curIndex = _this.curNavi;
@@ -721,7 +752,7 @@ Gswiper.prototype = {
         _this.viewIndex = _this.curIndex + 1;
     },
 
-    // 스와이퍼 무브 기능 최종 값 적용
+    // swipe move 
     swiperMoveValue : function(e) {
         var _this = e;
 
@@ -732,7 +763,7 @@ Gswiper.prototype = {
         _this.autoHeightInit(e);
     },
 
-    // 스와이퍼 인디케이터 최종 값 적용
+    // swipe indicator move
     indexValue : function(e) {
         var _this = e;
         
@@ -747,22 +778,22 @@ Gswiper.prototype = {
         
         $(_this.swiperItem).removeClass('active').not('.clone').eq(_locIndex).addClass('active');
 
-        // 'dot' 값
+        // 'dot' value
         if (_this.indicatorType === 'dot') {
             $(_this.indicatorDot).removeClass('active').eq(_locIndex).addClass('active');
 
         } 
-        // 'number' 값
+        // 'number' value
         else if (_this.indicatorType === 'number') {
             $(_this.indicatorNum).find('.indicator-cur').html(_locIndex + 1);
 
         } 
-        // 'bar' 값
+        // 'bar' value
         else if (_this.indicatorType === 'bar') {
             
             $(_this.indicatorBar)[0].style.transitionDuration = _this.transition_Duration;
 
-            // 'horizontal' , 'vertical' 구분
+            // 'horizontal' , 'vertical'
             if (_this.mode === 'horizontal') {
                 $(_this.indicatorBar)[0].style.transitionProperty = 'width';
                 $(_this.indicatorBar)[0].style.width = 100 / _this.swiperLength * (_locIndex + 1) + '%';
