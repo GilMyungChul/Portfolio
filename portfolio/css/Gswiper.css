@@ -7,43 +7,32 @@
 .swiper-wrap{position:relative;margin:0 auto;width:100%;height:100%;}
 .swiper-wrap:after, .swiperCont:after, .swiperList:after{content:'';display:block;clear:both;}
 .swiper-cont{width:100%;height:100%;overflow:hidden;margin:0 auto;}
-.swiper-list{position:relative;user-select:none;width:100%;height:100%;display:flex;}
-.slide-item{float:left;box-sizing:border-box;text-align:center;position:relative;display:flex;}
+.swiper-list{position:relative;user-select:none;width:100%;height:100%;display:flex;justify-content:center;align-items:center;}
+.swiper-item{float:left;box-sizing:border-box;text-align:center;position:relative;display:flex;}
 
-.swiper-btn .slide-btn{position:absolute;border:none;background:none;line-height:30px;background:#666;border-radius:3px;color:#fff;padding:1px 6px;top:50%;margin:0 5px;margin-top:-15px;user-select:none;}
-.swiper-btn .slide-btn:focus{outline:none;}
-.swiper-btn .slide-btn[disabled='disabled']{background:#999;}
-.swiper-btn .slide-btn.prev-btn{left:0px;}
-.swiper-btn .slide-btn.next-btn{right:0px;}
+.swiper-btn .btn{position:absolute;border:none;background:none;line-height:30px;background:#007aff;border-radius:3px;color:#fff;padding:1px 6px;top:50%;margin:0 5px;margin-top:-15px;user-select:none;}
+.swiper-btn .btn:focus{outline:none;}
+.swiper-btn .btn[disabled='disabled']{background:#007aff;}
+.swiper-btn .btn.prev-btn{left:0px;}
+.swiper-btn .btn.next-btn{right:0px;}
 
-.swiper-indicator .indicator-list,
-.swiper-wrap.horizontal .swiper-indicator .indicator-list{position:absolute;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);bottom:10px;user-select:none;}
-.swiper-indicator .indicator-list .indicator-items,
-.swiper-wrap.horizontal .swiper-indicator .indicator-list .indicator-items{width:6px;height:6px;border-radius:3px;float:left;margin:0 2px;background:#000;font-size:1px;text-indent:-99999px;overflow:hidden;cursor:pointer;}
-.swiper-indicator .indicator-list .indicator-items.active{background:#ff0000;}
-.swiper-indicator .indicator-list .indicator-num{font-size:15px;font-weight:bold}
-.swiper-indicator .indicator-list .indicator-num .indicator-cur{color:#ff0000;}
-.swiper-indicator .indicator-list.bar-list{width:100%;height:5px;background:#000;border-radius:3px;bottom:-10px;}
-.swiper-indicator .indicator-list.bar-list li{float:left;height:5px;font-size:1px;text-indent:-9999em;background:#ff0000;border-radius:3px;}
+.indicator-list{display:flex;justify-content:center;align-items:center;width:100%;position:absolute;bottom:10px;user-select:none;}
+.indicator-list.bar-list{justify-content:left;}
+.indicator-list .indicator-items{width:6px;height:6px;border-radius:3px;float:left;margin:0 4px;background:#007aff;font-size:1px;text-indent:-99999px;overflow:hidden;cursor:pointer;opacity:0.2}
+.indicator-list .indicator-items.active{opacity:1;}
+.indicator-list .indicator-num{font-size:15px;font-weight:bold;}
+.indicator-list .indicator-num .indicator-cur{color:#007aff;}
+.indicator-list.bar-list{width:100%;height:5px;background:#98caff;border-radius:10px;bottom:-10px;}
+.indicator-list.bar-list li{float:left;height:5px;font-size:1px;text-indent:-9999em;border-radius:10px;background:#007aff;}
 
 
 /* vertical */
-.swiper-wrap.vertical .swiper-list{flex-direction:column;}
-.swiper-wrap.vertical .swiper-indicator .indicator-list{right:10px;top:50%;-webkit-transform:translateY(-50%);transform:translateY(-50%);bottom:unset;left:unset;}
-.swiper-wrap.vertical .swiper-indicator .indicator-items{display:block;float:unset;margin:4px 0;}
-.swiper-wrap.vertical .swiper-btn .slide-btn{padding:0px 6px;right:-30px;margin:0;left:unset;}
-.swiper-wrap.vertical .swiper-btn .slide-btn.prev-btn{top:10px;}
-.swiper-wrap.vertical .swiper-btn .slide-btn.next-btn{bottom:10px;top:unset;}
-.swiper-wrap.vertical .swiper-indicator .indicator-list.bar-list{height:100%;width:5px;background:#bdbaba;border-radius:3px;}
-.swiper-wrap.vertical .swiper-indicator .indicator-list.bar-list li{float:left;width:5px;font-size:1px;text-indent:-9999em;background:#333;border-radius:3px;}
-
-
-/* swiper.css에 없어도 되는 소스 */
-body.active, html.active{overflow:hidden;}
-.wrap{position:relative;width:100%;height:100%;padding:50px;box-sizing:border-box;}
-.title{margin:0 auto;margin-top:100px;user-select:none;text-align:center;margin-bottom:20px;border:solid 1px #333;border-right:0;border-left:0;}
-.title:first-child{margin-top:0;}
-.title p{padding:10px 0;display:inline-block;font-size:16px;font-weight:bold;}
-.swiper-area{height:300px;width:100%;}
-.slide-item{background:#f6f6f6;}
-.slide-item span{color:#000;font-weight:bold;font-size:14px;width:60px;height:20px;position:absolute;left:50%;top:50%;margin-left:-30px;margin-top:-10px;}
+.vertical .swiper-btn .btn{padding:0px 6px;right:-30px;margin:0;left:auto;}
+.vertical .swiper-btn .btn.prev-btn{top:10px;}
+.vertical .swiper-btn .btn.next-btn{bottom:10px;top:auto;}
+.vertical .swiper-list{flex-direction:column;}
+.vertical .indicator-list{right:10px;top:0;bottom:0;left:auto;}
+.vertical .indicator-list{width:auto;height:100%;flex-direction:column;}
+.vertical .indicator-list .indicator-items{margin:4px 0;}
+.vertical .swiper-indicator .indicator-list.bar-list{height:100%;width:5px;}
+.vertical .swiper-indicator .indicator-list.bar-list li{width:5px;}
