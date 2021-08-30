@@ -1,202 +1,219 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GilSwiper</title>
-    <link rel="stylesheet" href="../../css/reset.css">
-    <link rel="stylesheet" href="../css/Gswiper.css">
+    <head>
+        <title>SWIPER PLUGIN</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+        <meta name="format-detection" content="telephone=no" />
+        <script type="text/javascript" src="../js/jquery-1.12.4.min.js"></script>
+        <script type="text/javascript" src="../js/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="../js/Gswiper.js"></script>
+        <link rel="stylesheet" href="../css/reset.css">
+        <link rel="stylesheet" href="../css/Gswiper.css">
 
-    <script type="text/javascript" src="../../js/jquery-3.2.1.min.js"></script> 
-    <script type="text/javascript" src="../../js/jquery-ui.min.js"></script> 
-    <script type="text/javascript" src="../js/Gswiper.js"></script> 
-</head>
-<body>
-    <div class="wrap">
-        <div class="title"><p>'swiper_one' / 'swiper_six'</p></div>
-        <div class="swiper-area">
-            <div class="swiper-wrap">
-                <div class="swiper-list swiper_one">
-                    <div class="slide-item"><span>Slide 01</span></div>
-                    <div class="slide-item"><span>Slide 02</span></div>
-                    <div class="slide-item"><span>Slide 03</span></div>
-                    <div class="slide-item"><span>Slide 04</span></div>
-                    <div class="slide-item"><span>Slide 05</span></div>
-                    <div class="slide-item"><span>Slide 06</span></div>
-                    <div class="slide-item"><span>Slide 07</span></div>
+        <style>
+            body.active, html.active{overflow:hidden;}
+            .wrap{position:relative;width:100%;height:100%;padding:50px;box-sizing:border-box;}
+            .title{margin:0 auto;margin-top:100px;user-select:none;text-align:center;margin-bottom:20px;border:solid 1px #333;border-right:0;border-left:0;}
+            .title:first-child{margin-top:0;}
+            .title p{padding:10px 0;display:inline-block;font-size:16px;font-weight:bold;}
+            .swiper-item{background:#ffefef;height:300px;}
+            .swiper-item span{color:#000;font-weight:bold;font-size:14px;width:60px;height:20px;position:absolute;left:50%;top:50%;margin-left:-30px;margin-top:-10px;}
+
+            .swiper_three .swiper-item{width:500px;height:200px;flex:1 0 auto;}
+        </style>
+    </head>
+    <body>
+        <div class="wrap">
+            <div class="title"><p>'swiper_one' / 'swiper_six'</p></div>
+            <div class="swiper-area">
+                <div class="swiper-wrap">
+                    <div class="swiper-list swiper_one">
+                        <div class="swiper-item"><span>Slide 01</span></div>
+                        <div class="swiper-item"><span>Slide 02</span></div>
+                        <div class="swiper-item"><span>Slide 03</span></div>
+                        <div class="swiper-item"><span>Slide 04</span></div>
+                        <div class="swiper-item"><span>Slide 05</span></div>
+                        <div class="swiper-item"><span>Slide 06</span></div>
+                        <div class="swiper-item"><span>Slide 07</span></div>
+                    </div>
+                    <div class="swiper-btn">
+                        <button type="button" class="btn prev-btn">◀</button>
+                        <button type="button" class="btn next-btn">▶</button>
+                    </div>
+                    <div class="swiper-indicator"></div>
                 </div>
-                <div class="swiper-btn">
-                    <button type="button" class="slide-btn prev-btn">◀</button>
-                    <button type="button" class="slide-btn next-btn">▶</button>
+            </div>
+
+            <div class="swiper-area">
+                <div class="swiper-wrap" style="margin-top:20px;">
+                    <div class="swiper-list swiper_six">
+                        <div class="swiper-item"><span>Slide 01</span></div>
+                        <div class="swiper-item"><span>Slide 02</span></div>
+                        <div class="swiper-item"><span>Slide 03</span></div>
+                        <div class="swiper-item"><span>Slide 04</span></div>
+                        <div class="swiper-item"><span>Slide 05</span></div>
+                        <div class="swiper-item"><span>Slide 06</span></div>
+                        <div class="swiper-item"><span>Slide 07</span></div>
+                    </div>
+                    <div class="swiper-btn">
+                        <button type="button" class="btn prev-btn">◀</button>
+                        <button type="button" class="btn next-btn">▶</button>
+                    </div>
+                    <div class="swiper-indicator"></div>
                 </div>
-                <div class="swiper-indicator"></div>
+            </div>
+    
+            <div class="title"><p>'swiper-two'</p></div>
+            <div class="swiper-area" style="padding:0 50px;box-sizing:border-box;">
+                <div class="swiper-wrap">
+                    <div class="swiper-list swiper_two">
+                        <div class="swiper-item"><span>Slide 01</span></div>
+                        <div class="swiper-item"><span>Slide 02</span></div>
+                        <div class="swiper-item"><span>Slide 03</span></div>
+                        <div class="swiper-item"><span>Slide 04</span></div>
+                        <div class="swiper-item"><span>Slide 05</span></div>
+                        <div class="swiper-item"><span>Slide 06</span></div>
+                        <div class="swiper-item"><span>Slide 07</span></div>
+                        <div class="swiper-item"><span>Slide 08</span></div>
+                    </div>
+                    <div class="swiper-btn">
+                        <button type="button" class="btn prev-btn">◀</button>
+                        <button type="button" class="btn next-btn">▶</button>
+                    </div>
+                    <div class="swiper-indicator"></div>
+                </div>
+            </div>
+
+            <div class="title"><p>'swiper-three'</p></div>
+            <div class="swiper-area">
+                <div class="swiper-wrap" style="width:1020px;">
+                    <div class="swiper-list swiper_three">
+                        <div class="swiper-item"><span>Slide 01</span></div>
+                        <div class="swiper-item"><span>Slide 02</span></div>
+                        <div class="swiper-item"><span>Slide 03</span></div>
+                        <div class="swiper-item"><span>Slide 04</span></div>
+                        <div class="swiper-item"><span>Slide 05</span></div>
+                        <div class="swiper-item"><span>Slide 06</span></div>
+                        <div class="swiper-item"><span>Slide 07</span></div>
+                        <div class="swiper-item"><span>Slide 08</span></div>
+                        <div class="swiper-item"><span>Slide 09</span></div>
+                        <div class="swiper-item"><span>Slide 10</span></div>
+                    </div>
+                    <div class="swiper-indicator"></div>
+                    <div class="swiper-btn">
+                        <button type="button" class="btn prev-btn">◀</button>
+                        <button type="button" class="btn next-btn">▶</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="title"><p>'swiper-four'</p></div>
+            <div class="swiper-area">
+                <div class="swiper-wrap vertical" style="height:300px;">
+                    <div class="swiper-list swiper_four">
+                        <div class="swiper-item"><span>Slide 01</span></div>
+                        <div class="swiper-item"><span>Slide 02</span></div>
+                        <div class="swiper-item"><span>Slide 03</span></div>
+                        <div class="swiper-item"><span>Slide 04</span></div>
+                        <div class="swiper-item"><span>Slide 05</span></div>
+                        <div class="swiper-item"><span>Slide 06</span></div>
+                        <div class="swiper-item"><span>Slide 07</span></div>
+                        <div class="swiper-item"><span>Slide 08</span></div>
+                    </div>
+                    <div class="swiper-indicator"></div>
+                </div>
+            </div>
+
+            <div class="title"><p>'swiper-five'</p></div>
+            <div class="swiper-area">
+                <div class="swiper-wrap">
+                    <div class="swiper-list swiper_five">
+                        <div class="swiper-item"><span>Slide 01</span></div>
+                        <div class="swiper-item"><span>Slide 02</span></div>
+                        <div class="swiper-item"><span>Slide 03</span></div>
+                        <div class="swiper-item"><span>Slide 04</span></div>
+                        <div class="swiper-item"><span>Slide 05</span></div>
+                        <div class="swiper-item"><span>Slide 06</span></div>
+                        <div class="swiper-item"><span>Slide 07</span></div>
+                        <div class="swiper-item"><span>Slide 08</span></div>
+                    </div>
+                    <div class="swiper-btn">
+                        <button type="button" class="btn prev-btn">◀</button>
+                        <button type="button" class="btn next-btn">▶</button>
+                    </div>
+                    <div class="swiper-indicator"></div>
+                </div>
             </div>
         </div>
+    
+        <script type="text/javascript">
+            var swiper_one = new Gswiper({
+                targetName: $('.swiper_one'),
+                between: 5,
+                viewIndex: 4,
+                itemView: 4,
+                swiperBtn: true,
+                loop: true
+            });
 
-        <div class="swiper-area">
-            <div class="swiper-wrap" style="margin-top:20px;">
-                <div class="swiper-list swiper_six">
-                    <div class="slide-item"><span>Slide 01</span></div>
-                    <div class="slide-item"><span>Slide 02</span></div>
-                    <div class="slide-item"><span>Slide 03</span></div>
-                    <div class="slide-item"><span>Slide 04</span></div>
-                    <div class="slide-item"><span>Slide 05</span></div>
-                    <div class="slide-item"><span>Slide 06</span></div>
-                    <div class="slide-item"><span>Slide 07</span></div>
-                </div>
-                <div class="swiper-btn">
-                    <button type="button" class="slide-btn prev-btn">◀</button>
-                    <button type="button" class="slide-btn next-btn">▶</button>
-                </div>
-                <div class="swiper-indicator"></div>
-            </div>
-        </div>
+            var swiper_six = new Gswiper({
+                targetName: $('.swiper_six'),
+                between: 5,
+                viewIndex: 4,
+                itemView: 4,
+                // swiperBtn: false,
+                loop: true,
+                // indicator: false,
+                // mergeDotHidden: 'visible',
+                // mergeBtnHidden: 'visible',
+                mergeTarget: swiper_one
+            });
+    
+            var swiper_two = new Gswiper({
+                targetName: $('.swiper_two'),
+                viewIndex: 5,
+                swiperWidth: 500,
+                // loop: true,
+                // autoHeight: true
+                indicatorType: 'number'
+            });
 
-        <div class="title"><p>'swiper-two'</p></div>
-        <div class="swiper-area">
-            <div class="swiper-wrap">
-                <div class="swiper-list swiper_two">
-                    <div class="slide-item"><span>Slide 01</span></div>
-                    <div class="slide-item"><span>Slide 02</span></div>
-                    <div class="slide-item"><span>Slide 03</span></div>
-                    <div class="slide-item"><span>Slide 04</span></div>
-                    <div class="slide-item"><span>Slide 05</span></div>
-                    <div class="slide-item"><span>Slide 06</span></div>
-                    <div class="slide-item"><span>Slide 07</span></div>
-                    <div class="slide-item"><span>Slide 08</span></div>
-                </div>
-                <div class="swiper-btn">
-                    <button type="button" class="slide-btn prev-btn">◀</button>
-                    <button type="button" class="slide-btn next-btn">▶</button>
-                </div>
-                <div class="swiper-indicator"></div>
-            </div>
-        </div>
+            var swiper_three = new Gswiper({
+                targetName: $('.swiper_three'),
+                // swiperWidth: 500,
+                // swiperHeight: 200,
+                between: 10,
+                itemView: 2,
+                // viewIndex: 2,
+                itemViewSwiper: 2,
+                loop: true,
+                useCss : true
+                // autoPlay: true,
+                // autoPlayTime: 1000
+            });
 
-        <div class="title"><p>'swiper-three'</p></div>
-        <div class="swiper-area">
-            <div class="swiper-wrap">
-                <div class="swiper-list swiper_three">
-                    <div class="slide-item"><span>Slide 01</span></div>
-                    <div class="slide-item"><span>Slide 02</span></div>
-                    <div class="slide-item"><span>Slide 03</span></div>
-                    <div class="slide-item"><span>Slide 04</span></div>
-                    <div class="slide-item"><span>Slide 05</span></div>
-                    <div class="slide-item"><span>Slide 06</span></div>
-                    <div class="slide-item"><span>Slide 07</span></div>
-                    <div class="slide-item"><span>Slide 08</span></div>
-                    <div class="slide-item"><span>Slide 09</span></div>
-                    <div class="slide-item"><span>Slide 10</span></div>
-                </div>
-                <div class="swiper-indicator"></div>
-            </div>
-        </div>
+            var swiper_four = new Gswiper({
+                targetName: $('.swiper_four'),
+                mode: 'vertical',
+                // swiperWidth: 600,
+                // swiperHeight: 400,
+                between: 5,
+                viewIndex: 3,
+                loop: true
+                // autoPlay: true,
+                // autoPlayTime: 2000
+            });
 
-        <div class="title"><p>'swiper-four'</p></div>
-        <div class="swiper-area">
-            <div class="swiper-wrap vertical">
-                <div class="swiper-list swiper_four">
-                    <div class="slide-item"><span>Slide 01</span></div>
-                    <div class="slide-item"><span>Slide 02</span></div>
-                    <div class="slide-item"><span>Slide 03</span></div>
-                    <div class="slide-item"><span>Slide 04</span></div>
-                    <div class="slide-item"><span>Slide 05</span></div>
-                    <div class="slide-item"><span>Slide 06</span></div>
-                    <div class="slide-item"><span>Slide 07</span></div>
-                    <div class="slide-item"><span>Slide 08</span></div>
-                </div>
-                <div class="swiper-indicator"></div>
-            </div>
-        </div>
-
-        <div class="title"><p>'swiper-five'</p></div>
-        <div class="swiper-area">
-            <div class="swiper-wrap">
-                <div class="swiper-list swiper_five">
-                    <div class="slide-item"><span>Slide 01</span></div>
-                    <div class="slide-item"><span>Slide 02</span></div>
-                    <div class="slide-item"><span>Slide 03</span></div>
-                    <div class="slide-item"><span>Slide 04</span></div>
-                    <div class="slide-item"><span>Slide 05</span></div>
-                    <div class="slide-item"><span>Slide 06</span></div>
-                    <div class="slide-item"><span>Slide 07</span></div>
-                    <div class="slide-item"><span>Slide 08</span></div>
-                </div>
-                <div class="swiper-btn">
-                    <button type="button" class="slide-btn prev-btn">◀</button>
-                    <button type="button" class="slide-btn next-btn">▶</button>
-                </div>
-                <div class="swiper-indicator"></div>
-            </div>
-        </div>
-    </div>
-
-    <script type="text/javascript">
-        var swiper_one = new Gswiper({
-            targetName: $('.swiper_one'),
-            between: 5,
-            viewIndex: 4,
-            itemView: 4,
-            swiperBtn: true,
-            loop: true
-        });
-
-        var swiper_six = new Gswiper({
-            targetName: $('.swiper_six'),
-            between: 5,
-            viewIndex: 4,
-            itemView: 4,
-            // swiperBtn: false,
-            loop: true,
-            // indicator: false,
-            // mergeDotHidden: 'visible',
-            // mergeBtnHidden: 'visible',
-            mergeTarget: swiper_one
-        });
-
-        var swiper_two = new Gswiper({
-            targetName: $('.swiper_two'),
-            viewIndex: 5,
-            swiperWidth: 500,
-            loop: true,
-            // autoHeight: true
-            indicatorType: 'number'
-        });
-
-        var swiper_three = new Gswiper({
-            targetName: $('.swiper_three'),
-            // swiperWidth: 400,
-            between: 10,
-            itemView: 2,
-            // itemViewSlide: 2,
-            viewIndex: 2,
-            loop: true,
-            // autoPlay: true,
-            // autoPlayTime: 5000
-            indicatorType: 'bar'
-        });
-
-        var swiper_four = new Gswiper({
-            targetName: $('.swiper_four'),
-            mode: 'vertical',
-            // swiperWidth: 600,
-            // swiperHeight: 400,
-            between: 5,
-            viewIndex: 3,
-            loop: true
-            // autoPlay: true,
-            // autoPlayTime: 2000
-        });
-
-        var swiper_five = new Gswiper({
-            targetName: $('.swiper_five'),
-            itemView: 3,
-            between: 5,
-            viewIndex: 3,
-            // swiperBtn: true,
-            loop: true
-            // valueOther: true
-        });
-    </script>
-</body>
+            var swiper_five = new Gswiper({
+                targetName: $('.swiper_five'),
+                itemView: 3,
+                between: 5,
+                viewIndex: 3,
+                // swiperBtn: true,
+                loop: true
+                // valueOther: true
+            });
+        </script>
+    </body>
 </html>
