@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title></title>
+    
+    <link rel="stylesheet" href="../css/reset.css">
+
+    <script type="text/javascript" src="../js/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript" src="../js/jquery-ui.min.js"></script>
+
+    <style>
+        html{overflow:hidden;}
+        ul[data-rainbow] li{width:3px;height:15px;border-radius:5px;position:absolute;top:0;background:#326faf;font-size:0px;}
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <ul data-rainbow="1"></ul>
+    </div>
+
+    <script>
+        
+        function effect(opt) {
+            this.effectMode = opt.effectMode,
+            this.target = opt.target,
+            this.number = opt.number,
+            this.speed = opt.speed || 1,
+            this.delay = opt.delay || 1000,
+
+            this.min = opt.min || 0;
+            this.max = opt.max || $(window).width();
+
+            this.randomValue;
+
+            this.rbList;
+            this.rbH;
+
+            this.winH = $(window).height();
+            this.winW = $(window).width();
+
+            this.init();
+        }
+        
+        // rainbow = rb
+
+        effect.prototype = {
+            init : function() {
+
+                // effectMode = rainbow
+                this.rbInit();
+                this.rbSetInterval();
+            },
+
+            rbInit : function() {
+                for (var i = 1; i <= this.number; i++) {
+                    this.randomValue = parseInt(Math.random() * (this.max - this.min) + this.min);
+                    var rbList = '<li data-rbList="' + i +'" style="left:' + this.randomValue + 'px">' + i + '</li>';
+                    $(this.target).append(rbList);
+                }
+
+                this.rbH = $('[data-rbList]').height();
+                $('[data-rbList]').css({'top': -this.rbH + 'px'});
+            },
+
+            rbSetInterval : function() {
+                var _obj = this;
+                setInterval(function(){
+                    _obj.randomValue = parseInt(Math.random() * (_obj.number - 0) + 0);
+                    $('[data-rbList="' + _obj.randomValue + '"]').css({'top': _obj.winH + _obj.rbH, 'transition-duration': _obj.speed + 's'});
+                }, _obj.delay);
+                
+                $('[data-rbList]').bind('transitionend webkitTransitionEnd', _obj, function(e){
+                    $('[data-rbList]').unbind('transitionend webkitTransitionEnd');
+                    $('[data-rbList]').css({'top': - _obj.rbH + 'px', 'transition-duration': 0 + 's'});
+                })
+                
+            }
+        }
+        
+    </script>
+
+    <script>
+        
+        var raninbow = new effect({
+            effectMode: 'rainbow',
+            target: $('[data-rainbow="1"]'),
+            number: 50,
+            delay: 100,
+        })
+    </script>
+</body>
+</html>
