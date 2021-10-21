@@ -438,10 +438,6 @@ Gswiper.prototype = {
         _this.transitionIng = true;
         _this.objectDataValue(e);
 
-        if (_this.mergeTarget) {
-            _this.nextIndex = parseInt(_this.curX / - _this.swiperWidth) - 1;
-        }
-
         if (_this.eventClickChk === true) {_this.nextBtnValue(e);}
 
         _this.eventClickChk = false;
@@ -464,10 +460,6 @@ Gswiper.prototype = {
         _this.eventClickChk = true;
         _this.transitionIng = true;
         _this.objectDataValue(e);
-
-        if (_this.mergeTarget) {
-            _this.prevIndex = parseInt(_this.curX / - _this.swiperWidth) - 3;
-        }
         
         if (_this.eventClickChk === true) {_this.prevBtnValue(_this);}
 
