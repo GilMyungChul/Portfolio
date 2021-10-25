@@ -13,82 +13,156 @@
 
     <style>
         html{overflow:hidden;}
-        ul[data-rainbow] li{width:3px;height:15px;border-radius:5px;position:absolute;top:0;background:#326faf;font-size:0px;}
+        
+        .effectRain{width:500px;height:500px;overflow:hidden;position:relative;margin:50px auto 0;}
+        .effectRain li{width:4px;height:50px;position:absolute;background:#326faf;top:0;font-size:0px;}
+        .effectRain li img{width:100%;}
     </style>
 </head>
 <body>
     <div class="wrap">
-        <ul data-rainbow="1"></ul>
+        <div class="slowDwon">
+            <ul class="effectRain"></ul>
+        </div>
     </div>
 
     <script>
         
         function effect(opt) {
+
+            this.pageXY = function(e) {
+                var pageX = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageX : e.originalEvent.pageX;                               // swiper X축
+                var pageY = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageY : e.originalEvent.pageY;                               // swiper Y축
+                var pageXY = new Array(pageX, pageY);
+
+                return pageXY;
+            };
+            
             this.effectMode = opt.effectMode,
             this.target = opt.target,
             this.number = opt.number,
             this.speed = opt.speed || 1,
             this.delay = opt.delay || 1000,
 
-            this.min = opt.min || 0;
-            this.max = opt.max || $(window).width();
-
             this.randomValue;
 
-            this.rbList;
-            this.rbH;
+            if (this.effectMode == 'rain') {                                                                                                                // 슬로우 다운 (비내리는 효과)
+                this.rainObj = opt.rainObj;
+                this.rainList;
+                this.rainH;
+                this.rainObjH = $(this.rainObj).height();
+
+                this.targetW = this.target.width();
+                this.targetH = this.target.height();
+
+                this.offsetX = this.target.offset().left;
+                this.offsetY = this.target.offset().top;
+
+                this.rainObjX;
+                this.rainObjY;
+
+                this.min = 0;
+                this.max = this.targetW;
+
+                this.rainX;
+
+                this.rainMoveChk = false;
+            }
 
             this.winH = $(window).height();
             this.winW = $(window).width();
 
             this.init();
         }
-        
-        // rainbow = rb
 
         effect.prototype = {
             init : function() {
 
-                // effectMode = rainbow
-                this.rbInit();
-                this.rbSetInterval();
+                this.events();
+
+                // effectMode = rain
+                if (this.effectMode = 'rain') {
+                    this.rainInit();
+                    this.rainSetInterval();
+                }
             },
 
-            rbInit : function() {
-                for (var i = 1; i <= this.number; i++) {
-                    this.randomValue = parseInt(Math.random() * (this.max - this.min) + this.min);
-                    var rbList = '<li data-rbList="' + i +'" style="left:' + this.randomValue + 'px">' + i + '</li>';
-                    $(this.target).append(rbList);
+            events : function() {
+                var _this = this;
+
+                if (_this.effectMode = 'rain') {
+                    $(_this.target)
+                        .unbind('mouseenter').bind('mouseenter', _this, function(e){_this.rainEnter(e)})
+                        .unbind('mousemove').bind('mousemove', _this, function(e){if (_this.rainMoveChk) {_this.rainMove(e)}})
+                        .unbind('mouseleave').bind('mouseleave', _this, function(e){_this.rainLeave(e)});
+                }
+            },
+
+            rainEnter : function(e) {
+                var _this = e.data;
+                _this.rainMoveChk = true;
+
+                _this.rainX = e.originalEvent.pageX;
+            },
+
+            rainMove : function(e, _random) {
+                console.log(_random)
+                var _this = e.data;
+                var _per = 45 / ($(_this.target).width()/2)
+                var _val = ($(this.target).width()/2 + _this.offsetX) - _this.pageXY(e)[0];
+
+                $(_this.rainObj).css({'transform': 'rotate(' + (_per * _val) + 'deg)', 'transition-duration': 0 + 's'});
+            },
+
+            rainLeave : function(e) {
+                var _this = e.data;
+                _this.rainMoveChk = false;
+            },
+
+            rainInit : function() {
+                var _this = this;
+                for (var i = 1; i <= _this.number; i++) {
+                    _this.randomValue = parseInt(Math.random() * (_this.max - _this.min) + _this.min);
+                    var rainList = '<' + _this.rainObj + ' data-rainList="' + i +'" style="left:' + _this.randomValue + 'px">' + i + '</' + _this.rainObj + '>';
+                    $(_this.target).append(rainList);
                 }
 
-                this.rbH = $('[data-rbList]').height();
-                $('[data-rbList]').css({'top': -this.rbH + 'px'});
+                this.rainH = $('[data-rainList]').height();
+                $('[data-rainList]').css({'top': -this.rainH + 'px'});
             },
 
-            rbSetInterval : function() {
-                var _obj = this;
+            rainSetInterval : function(e) {
+                var _this = this;
                 setInterval(function(){
-                    _obj.randomValue = parseInt(Math.random() * (_obj.number - 0) + 0);
-                    $('[data-rbList="' + _obj.randomValue + '"]').css({'top': _obj.winH + _obj.rbH, 'transition-duration': _obj.speed + 's'});
-                }, _obj.delay);
+                    _this.randomValue = parseInt(Math.random() * (_this.number - 0) + 0);
+                    $('[data-rainList="' + _this.randomValue + '"]').css({'top': _this.targetH + _this.rainH, 'transition-duration': _this.speed + 's'});
+
+                    _this.transitionEnd(_this.randomValue);
+                    _this.rainMove(e, _this.randomValue);
+                }, _this.delay);
+            },
+
+            transitionEnd : function(_random) {
+                var _this = this;
                 
-                $('[data-rbList]').bind('transitionend webkitTransitionEnd', _obj, function(e){
-                    $('[data-rbList]').unbind('transitionend webkitTransitionEnd');
-                    $('[data-rbList]').css({'top': - _obj.rbH + 'px', 'transition-duration': 0 + 's'});
+                $('[data-rainList="' + _random + '"]').bind('transitionend webkitTransitionEnd', _this, function(e){
+                    $('[data-rainList="' + _random + '"]').unbind('transitionend webkitTransitionEnd');
+                    $('[data-rainList="' + _random + '"]').css({'top': - _this.rainH + 'px', 'transition-duration': 0 + 's'});
                 })
-                
-            }
+            }   
         }
         
     </script>
 
     <script>
         
-        var raninbow = new effect({
-            effectMode: 'rainbow',
-            target: $('[data-rainbow="1"]'),
+        var rain = new effect({
+            effectMode: 'rain',
+            target: $('.effectRain'),
+            rainObj: 'li',
             number: 50,
-            delay: 100,
+            speed: 2.5,
+            delay: 500
         })
     </script>
 </body>
