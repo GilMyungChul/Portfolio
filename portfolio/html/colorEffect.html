@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>color effect</title>
+
+    <link rel="stylesheet" href="/resource/reset.css"></link>
+    <link rel="stylesheet" href="/resource/common.css"></link>
+
+    <script src="/resource/jquery-3.5.1.min.js"></script>
+    <script src="/resource/jquery-ui.min.js"></script>
+</head>
+<body>
+    <div class="wrap">
+        <div>
+            <ul class="colorEffect"></ul>
+        </div>
+    </div>
+
+    <script>
+        function effect(opt){
+
+            this.pageXY = function(e) {
+                var pageX = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageX : e.originalEvent.pageX;                               // swiper X축
+                var pageY = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageY : e.originalEvent.pageY;                               // swiper Y축
+                var pageXY = new Array(pageX, pageY);
+
+                return pageXY;
+            };
+
+            this.effectMode = opt.effectMode,                                                                                                               // 이펙트 설정
+            this.effectEvent = opt.effectEvent,                                                                                                             // 어느 이벤트를 적용할지 설정 : 'click' or 'mouseenter'
+            this.effectMotion = opt.effectMotion,                                                                                                           // 이벤트가 적용되는 오브젝트의 갯수 설정 : 'single' or 'multi'
+            this.target = opt.target,
+            this.colorMode = opt.colorMode || 'rgb',                                                                                                        // 색상코드 : 'RGB' or 'HEX'
+            this.colorCode = opt.colorCode,                                                                                                                 // 색상의 3원색 : 'red' or 'green' or 'blue'
+            this.colorCodeChk = opt.colorCodeChk || false,                                                                                                  // 처음으로 노출되는 색상 설정 : '랜덤' or '색상의 3원색'
+            this.colorCodeRandom = this.colorCodeChk ? (opt.colorCodeRandom || false) : false,                                                              // 색상의 3원색 안에서 랜덤으로 적용할지 설정 : 'true' or 'false'
+            this.lineLength = opt.lineLength,                                                                                                               // 한줄에 몇개의 오브젝트를 노출할지 설정
+            this.colorObj = opt.colorObj,                                                                                                                   // 오브젝트 태그 네임
+            this.codeChangeNum = opt.codeChangeNum || 1,                                                                                                    // RGB인 경우 색상의 변경되는 숫자의 크기
+
+            this.randomColor;                                                                                                                               // 랜덤색상
+            this.number = this.lineLength * this.lineLength;                                                                                                // 오브젝트 갯수
+            
+            this.colorList;                                                                                                                                 
+            this.colorW;                                                                                                                                    // 오브젝트 width값
+            this.colorH;                                                                                                                                    // 오브젝트 height값
+            this.colorMargin;                                                                                                                               // 오브젝트 margin값
+
+            this.max = 255;                                                                                                                                 // 색상 RGB코드 최대값
+            this.min = 0;                                                                                                                                   // 색상 RGB코드 최소값
+            this.RGBarray = new Array();                                                                                                                    // 랜덤으로 지정된 최종 RGB값의 배열
+            this.RGBlist = new Array();                                                                                                                     // 랜덤으로 지정된 기본 RGB값의 배열
+            this.HEXarray = new Array();                                                                                                                    // 랜덤으로 지정된 최종 HEX값의 배열
+            this.HEXlist;                                                                                                                                   // 랜덤으로 지정된 기본 HEX값
+
+            this.winW = $(window).width();                                                                                                                  // 다비이스, 윈도우 width값
+            this.winH = $(window).height();                                                                                                                 // 디바이스, 윈도우 height값
+
+            this.init();
+        }
+
+        // HEX color code
+        // (red) (green) (blue)
+        // 00~ff  00~ff   00~ff
+
+        // RGB color code
+        // (red) (green) (blue)
+        // 0~255  0~255   0~255
+
+        effect.prototype = {
+            init : function() {
+                
+                this.baseValue();
+                this.randomColorInit();
+                this.colorInit();
+
+                this.events();
+            },
+
+            events : function() {
+                var _this = this;
+
+                $(_this.colorObj)
+                    .unbind(_this.effectEvent).bind(_this.effectEvent, _this, function(e){_this.colorChange(e, $(this))});
+            },
+
+            baseValue : function() {
+                var _this = this;
+                
+                for (var i = 1; i <= _this.number; i++) {
+                    var _colorList = '<' + _this.colorObj +' data-color="' + i + '" style="background:#ffffff">' + i + '</' + _this.colorObj + '>';
+                    $(_this.target).append(_colorList);
+                }
+
+                _this.colorList = $(_this.target).find(_this.colorObj);
+                _this.colorW = $(_this.colorList).width();
+                _this.colorH = $(_this.colorList).height();
+
+                _this.colorMargin = parseInt($(_this.colorList).css('margin')) * 2;
+                $(_this.target).css({'width': (_this.colorW + _this.colorMargin) * _this.lineLength, 'height': (_this.colorH + _this.colorMargin) * _this.lineLength});
+            },
+
+            randomColorInit : function() {
+                var _this = this;
+                
+                if (_this.colorMode == 'rgb') {
+                    if (!_this.colorCodeChk) {
+                        for (var i = 1; i <= _this.number; i++) {
+                            _this.rgbInit();
+                            _this.RGBarray[i] = _this.RGBlist;
+
+                            _this.RGBlist = [];
+                        }
+                    } else {
+                        if (_this.colorCodeRandom) {
+                            for (var i = 1; i <= _this.number; i++) {
+                                _this.rgbInit();
+                                _this.RGBarray[i] = _this.RGBlist;
+
+                                _this.RGBlist = [];
+                            }
+                        } else {
+                            _this.rgbInit();
+                        }
+                    }
+                    
+                } 
+                else if (_this.colorMode == 'hex') {
+                    if (!_this.colorCodeChk) {
+                        for (var i = 1; i <= _this.number; i++) {
+                            _this.hexInit();
+                            _this.HEXarray[i] = _this.HEXlist;
+
+                            _this.HEXlist = '';
+                        }
+                    } else {
+                        if (_this.colorCodeRandom) {
+                            for (var i = 1; i <= _this.number; i++) {
+                                _this.hexInit();
+                                _this.HEXarray[i] = _this.HEXlist;
+
+                                _this.HEXlist = '';
+                            }
+                        } else {
+                            _this.hexInit();
+                        }
+                    }
+                    
+                }
+            },
+
+            rgbInit : function() {
+                var _this = this;
+
+                if (!_this.colorCodeChk) {
+                    for (var i = 1; i <= 3; i++) {
+                        _this.randomColor = parseInt(Math.random() * (_this.max - _this.min) + _this.min);
+                        var _RGB = _this.randomColor;
+                        _this.RGBlist.push(_RGB);
+                    }
+
+                    return _this.RGBlist;
+                } else {
+                    if (_this.colorCodeRandom) {
+                        for (var i = 1; i <= 1; i++) {
+                            _this.randomColor = parseInt(Math.random() * (_this.max - _this.min) + _this.min);
+                            var _RGB = _this.randomColor;
+                            _this.RGBlist.push(_RGB);
+                        }
+
+                        return _this.RGBlist;
+                    } else {
+                        _this.RGBarray = [0,255];
+                    }
+                }
+            },
+
+            hexInit : function() {
+                var _this = this;
+                var _HEX = 'ABCDEF0123456789';
+
+                if (!_this.colorCodeChk) {
+                    for (var i = 0; i < 6; i++) {
+                        _this.HEXlist += _HEX.charAt(Math.floor(Math.random() * _HEX.length));
+                        _this.HEXlist = _this.HEXlist.replace('undefined', '');
+                    }
+
+                    return _this.HEXlist;
+                } else {
+                    if (_this.colorCodeRandom) {
+                        for (var i = 0; i < 2; i++) {
+                            _this.HEXlist += _HEX.charAt(Math.floor(Math.random() * _HEX.length));
+                            _this.HEXlist = _this.HEXlist.replace('undefined', '');
+                        }
+
+                        return _this.HEXlist;
+                    } else {
+                        _this.HEXarray = _HEX.split("");
+                    }
+                    
+                }
+            },
+
+            colorInit : function() {
+                var _this = this;
+
+                if (_this.colorMode == 'rgb') {
+                    if (!_this.colorCodeChk) {
+                        for (var i = 1; i <= _this.number; i++) {
+                            $('[data-color="' + i + '"]')[0].style.backgroundColor = 'rgb(' + _this.RGBarray[i][0] + ',' + _this.RGBarray[i][1] + ',' + _this.RGBarray[i][2] + ')';
+                        }
+                    } else {
+                        for (var i = 1; i <= _this.number; i++) {
+                            var _code = _this.colorCodeRandom ? _this.RGBarray[i][0] : _this.RGBarray[1];
+
+                            if (_this.colorCode == 'red') {
+                                // $('[data-color="' + i + '"]')[0].style.backgroundColor = 'rgb(' + _code + ',' + 0 + ',' + 0 + ')';
+                            } else if (_this.colorCode == 'green') {
+                                // $('[data-color="' + i + '"]')[0].style.backgroundColor = 'rgb(' + 0 + ',' + _code + ',' + 0 + ')';
+                            } else if (_this.colorCode == 'blue') {
+                                // $('[data-color="' + i + '"]')[0].style.backgroundColor = 'rgb(' + 0 + ',' + 0 + ',' + _code + ')';
+                            }
+                        }
+                    }
+                    
+                } 
+                else if (_this.colorMode == 'hex') {
+                    if (!_this.colorCodeChk) {
+                        for (var i = 1; i <= _this.number; i++) {
+                            $('[data-color="' + i + '"]')[0].style.backgroundColor = '#' + _this.HEXarray[i];
+                        }
+                    } else {
+                        for (var i = 1; i <= _this.number; i++) {
+                            // var _code = _this.colorCodeRandom ? _this.HEXarray[i] : _this.HEXarray[5] + _this.HEXarray[5];
+
+                            if (_this.colorCode == 'red') {
+                                $('[data-color="' + i + '"]')[0].style.backgroundColor = '#' + _code + 0 + 0 + 0 + 0;
+                            } else if (_this.colorCode == 'green') {
+                                $('[data-color="' + i + '"]')[0].style.backgroundColor = '#' + 0 + 0 + _code + 0 + 0;
+                            } else if (_this.colorCode == 'blue') {
+                                $('[data-color="' + i + '"]')[0].style.backgroundColor = '#' + 0 + 0 + 0 + 0 + _code;
+                            }
+                            
+                        }
+                    }
+
+                }
+            },
+
+            colorChange : function(e, _obj) {
+                var _this = e.data;
+                var _AttrDataColor = _obj.attr('data-color');
+                var _obj_ = _this.effectMotion == 'multi' ? _this.colorList : _obj;
+                var _BackgroundColor = _obj[0].style.backgroundColor;
+                var _changeColor;
+
+                // 마우스 오버 효과
+                if (_this.effectEvent == 'mouseenter') {
+                    // 처음 노출되는 색상이 3원색인 경우
+                    if (_this.colorCodeChk) {
+                        
+
+                        // RGB값을 HEX값으로 변경
+                        if (_this.colorMode == 'hex') {
+                            var _hex = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
+                            _hex.forEach(function(str, x, arr) {
+                                str = parseInt(str, 10).toString(16);
+                                if (str.length === 1) {str = "0" + str};
+
+                                arr[x] = str;
+                            });
+                            
+                            _changeColor = _BackgroundColor[1].split("");
+                        } 
+                        else if (_this.colorMode == 'rgb') {
+                            var _rgb = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
+                            
+                            _changeColor = parseInt(_rgb[1]) - parseInt(Math.random() * (10 - 0) + 0);;
+                            if (_rgb[1] <= 0) {_changeColor = 255}
+                            
+                            $(_obj_).css('background', 'rgb(' + _rgb[0] + ',' + _changeColor + ',' + _rgb[2] + ')');
+                            _rgb[1] = _changeColor;
+                        };
+                    } 
+                    // 처음 노출되는 색상이 랜덤인 경우
+                    else {}
+                }
+
+                // 마우스 클릭 효과
+                else if (_this.effectEvent == 'click') {
+                    // 처음 노출되는 색상이 3원색인 경우
+                    if (_this.colorCodeChk) {
+                        // RGB값을 HEX값으로 변경
+                        if (_this.colorMode == 'hex') {
+                            var _hex = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
+                            _hex.forEach(function(str, x, arr) {
+                                str = parseInt(str, 10).toString(16);
+                                if (str.length === 1) {str = "0" + str};
+
+                                arr[x] = str;
+                            });
+                            
+                            _changeColor = _BackgroundColor[1].split("");
+                        } 
+                        else if (_this.colorMode == 'rgb') {
+                            var _rgb = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
+                            
+                            _changeColor = parseInt(_rgb[1]) - parseInt(Math.random() * (10 - 0) + 0);;
+                            if (_rgb[1] <= 0) {_changeColor = 255}
+                            
+                            $(_obj_).css('background', 'rgb(' + _rgb[0] + ',' + _changeColor + ',' + _rgb[2] + ')');
+                            _rgb[1] = _changeColor;
+                        };
+                    }
+                    // 처음 노출되는 색상이 랜덤인 경우
+                    else{}
+                }
+                
+            }
+        }
+    </script>
+
+    <script>
+
+        var color = new effect({
+            effectMode: 'color',
+            target: $('.colorEffect'),
+            effectMotion: 'single',
+            effectEvent: 'click',
+            colorMode: 'hex',
+            colorCodeChk: true,
+            // colorCodeRandom: true,
+            colorCode: 'red',
+            codeChangeNum: 10,
+            lineLength: 4,
+            colorObj: 'li'
+        })
+
+    </script>
+</body>
+</html>
+
+<!-- HEX값을 RGB값으로 변경 
+    
+    /* 맨 앞의 "#" 기호를 삭제하기. */ 
+    var hex = hexType.trim().replace( "#", "" ); 
+    
+    /* rgb로 각각 분리해서 배열에 담기. */ 
+    var rgb = ( 3 === hex.length ) ? 
+        hex.match( /[a-f\d]/gi ) : hex.match( /[a-f\d]{2}/gi );     
+    
+    rgb.forEach(function (str, x, arr){     
+        /* rgb 각각의 헥사값이 한자리일 경우, 두자리로 변경하기. */ 
+        if ( str.length == 1 ) str = str + str; 
+        
+        /* 10진수로 변환하기. */ 
+        arr[ x ] = parseInt( str, 16 ); 
+    }); 
+    
+    return "rgb(" + rgb.join(", ") + ")"; 
+    
+ -->
