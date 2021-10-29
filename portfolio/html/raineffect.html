@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>rain effect</title>
+    
+    <link rel="stylesheet" href="/resource/reset.css">
+    <link rel="stylesheet" href="/resource/common.css">
+
+    <script type="text/javascript" src="/resource/jquery-3.5.1.min.js"></script>
+    <script type="text/javascript" src="/resource/jquery-ui.min.js"></script>
+</head>
+<body>
+    <div class="wrap">
+        <div>
+            <ul class="rainEffect"></ul>
+        </div>
+    </div>
+
+    <script>
+        
+        function effect(opt) {
+
+            this.pageXY = function(e) {
+                var pageX = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageX : e.originalEvent.pageX;                               // swiper X축
+                var pageY = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageY : e.originalEvent.pageY;                               // swiper Y축
+                var pageXY = new Array(pageX, pageY);
+
+                return pageXY;
+            };
+            
+            this.effectMode = opt.effectMode,
+            this.target = opt.target,
+            this.length = opt.length,
+            this.speed = opt.speed || 1,
+            this.delay = opt.delay || 1000,
+            this.rainObj = opt.rainObj,
+
+            this.randomValue;
+
+            this.rainList;
+            this.rainH;
+
+            this.targetW = this.target.width();
+            this.targetH = this.target.height();
+
+            this.offsetX = this.target.offset().left;
+            this.offsetY = this.target.offset().top;
+
+            this.rainObjX;
+            this.rainObjY;
+
+            this.min = 0;
+            this.max = this.targetW;
+
+            this.rainX;
+
+            this.rainMoveChk = false;
+
+            this.randomLeft;
+            this.randomNum;
+            
+            this.initArray = new Array();
+            this.addArray = new Array();
+            
+            this.winH = $(window).height();
+            this.winW = $(window).width();
+
+            this.init();
+        }
+
+        effect.prototype = {
+            init : function() {
+
+                this.events();
+
+                // effectMode = rain
+                if (this.effectMode = 'rain') {
+                    this.rainInit();
+                    this.rainSetInterval();
+                }
+            },
+
+            events : function() {
+                var _this = this;
+
+                $(_this.target)
+                    .unbind('mouseenter').bind('mouseenter', _this, function(e){_this.rainEnter(e)})
+                    .unbind('mousemove').bind('mousemove', _this, function(e){if (_this.rainMoveChk) {_this.rainMove(e)}})
+                    .unbind('mouseleave').bind('mouseleave', _this, function(e){_this.rainLeave(e)});
+            },
+
+            rainEnter : function(e) {
+                var _this = e.data;
+                _this.rainMoveChk = true;
+
+                _this.rainX = e.originalEvent.pageX;
+
+                _this.addArray = _this.initArray.map(function(item, index, array){
+                    return item - _this.rainX;
+                })
+            },
+
+            rainMove : function(e) {
+                var _this = e.data;
+                var _per = 45 / ($(_this.target).width()/2)
+                var _val = ($(this.target).width()/2 + _this.offsetX) - _this.pageXY(e)[0];
+
+                _this.addArray = _this.initArray.map(function(item, index, array){
+                    return item - _val;
+                })
+
+                for (var i = 0; i <= _this.length; i++) {
+                    var list = i + 1;
+                    $('[data-rain="' + list  + '"]').css('left', _this.addArray[i]);
+                }
+
+                $(_this.rainObj).css({'transform': 'rotate(' + (_per * _val) + 'deg)', 'transition-duration': 0 + 's'});
+            },
+
+            rainLeave : function(e) {
+                var _this = e.data;
+                _this.rainMoveChk = false;
+            },
+
+            rainInit : function() {
+                var _this = this;
+                for (var i = 1; i <= _this.length; i++) {
+                    _this.randomLeft = parseInt(Math.random() * (_this.max - _this.min) + _this.min);
+                    _this.rainList = '<' + _this.rainObj + ' data-rain="' + i +'" style="left:' + _this.randomLeft + 'px">' + i + '</' + _this.rainObj + '>';
+                    $(_this.target).append(_this.rainList);
+                    
+                    _this.initArray.push(_this.randomLeft);
+                }
+
+                this.rainH = $('[data-rain]').height();
+                $('[data-rain]').css({'top': -this.rainH + 'px'});
+            },
+
+            rainSetInterval : function() {
+                var _this = this;
+                setInterval(function(){
+                    _this.randomNum = parseInt(Math.random() * (_this.length - 0) + 0);
+                    $('[data-rain="' + _this.randomNum + '"]').css({'top': _this.targetH + _this.rainH, 'transition-duration': _this.speed + 's'});
+
+                    _this.transitionEnd(_this.randomNum);
+                }, _this.delay);
+            },
+
+            transitionEnd : function(_random) {
+                var _this = this;
+                
+                $('[data-rain="' + _random + '"]').bind('transitionend webkitTransitionEnd', _this, function(e){
+                    $('[data-rain="' + _random + '"]').unbind('transitionend webkitTransitionEnd');
+                    $('[data-rain="' + _random + '"]').css({'top': - _this.rainH + 'px', 'transition-duration': 0 + 's'});
+                })
+            }   
+        }
+        
+    </script>
+
+    <script>
+        var rain = new effect({
+            effectMode: 'rain',
+            target: $('.rainEffect'),
+            rainObj: 'li',
+            length: 50,
+            speed: 2.5,
+            delay: 500
+        })
+    </script>
+</body>
+</html>
