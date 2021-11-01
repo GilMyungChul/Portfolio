@@ -34,13 +34,13 @@
             this.effectEvent = opt.effectEvent,                                                                                                             // 어느 이벤트를 적용할지 설정 : 'click' or 'mouseenter'
             this.effectMotion = opt.effectMotion,                                                                                                           // 이벤트가 적용되는 오브젝트의 갯수 설정 : 'single' or 'multi'
             this.target = opt.target,
+            this.autoplay = opt.autoplay || false,                                                                                                          // autoplay (default : false)
+            this.autodelay = opt.autodelay || 1000,                                                                                                         // autoplay 딜레이 (default : 1000)
             this.colorMode = opt.colorMode || 'rgb',                                                                                                        // 색상코드 : 'RGB' or 'HEX'
-            this.colorCode = opt.colorCode,                                                                                                                 // 색상의 3원색 : 'red' or 'green' or 'blue'
-            this.colorCodeChk = opt.colorCodeChk || false,                                                                                                  // 처음으로 노출되는 색상 설정 : '랜덤' or '색상의 3원색'
-            this.colorCodeRandom = this.colorCodeChk ? (opt.colorCodeRandom || false) : false,                                                              // 색상의 3원색 안에서 랜덤으로 적용할지 설정 : 'true' or 'false'
+            this.colorCodeChk = opt.colorCodeChk || false,                                                                                                  // 처음 노출되는 색상을 모두 랜덤(default : true)으로 할지 각각 다른 색상(false)으로 적용할지 선택 
             this.lineLength = opt.lineLength,                                                                                                               // 한줄에 몇개의 오브젝트를 노출할지 설정
             this.colorObj = opt.colorObj,                                                                                                                   // 오브젝트 태그 네임
-            this.codeChangeNum = opt.codeChangeNum || 1,                                                                                                    // RGB인 경우 색상의 변경되는 숫자의 크기
+            this.rgbCodeChangeNum = opt.rgbCodeChangeNum || 1,                                                                                              // RGB인 경우 색상의 변경되는 숫자의 크기
 
             this.randomColor;                                                                                                                               // 랜덤색상
             this.number = this.lineLength * this.lineLength;                                                                                                // 오브젝트 갯수
@@ -76,23 +76,24 @@
                 
                 this.baseValue();
                 this.randomColorInit();
-                this.colorInit();
+                // this.colorInit();
 
                 this.events();
             },
 
             events : function() {
                 var _this = this;
-
-                $(_this.colorObj)
-                    .unbind(_this.effectEvent).bind(_this.effectEvent, _this, function(e){_this.colorChange(e, $(this))});
+                
+                if (_this.effectEvent != 'auto') {
+                    $(_this.colorObj).unbind(_this.effectEvent).bind(_this.effectEvent, _this, function(e){_this.changeEvInit(e, $(this));});
+                } else {_this.autoplayEvInit();;}
             },
 
             baseValue : function() {
                 var _this = this;
                 
                 for (var i = 1; i <= _this.number; i++) {
-                    var _colorList = '<' + _this.colorObj +' data-color="' + i + '" style="background:#ffffff">' + i + '</' + _this.colorObj + '>';
+                    var _colorList = '<' + _this.colorObj +' data-color="' + i + '" style="background:#f1f1f1;">' + i + '</' + _this.colorObj + '>';
                     $(_this.target).append(_colorList);
                 }
 
@@ -108,7 +109,7 @@
                 var _this = this;
                 
                 if (_this.colorMode == 'rgb') {
-                    if (!_this.colorCodeChk) {
+                    if (_this.colorCodeChk) {
                         for (var i = 1; i <= _this.number; i++) {
                             _this.rgbInit();
                             _this.RGBarray[i] = _this.RGBlist;
@@ -116,21 +117,11 @@
                             _this.RGBlist = [];
                         }
                     } else {
-                        if (_this.colorCodeRandom) {
-                            for (var i = 1; i <= _this.number; i++) {
-                                _this.rgbInit();
-                                _this.RGBarray[i] = _this.RGBlist;
-
-                                _this.RGBlist = [];
-                            }
-                        } else {
-                            _this.rgbInit();
-                        }
+                        _this.rgbInit();
                     }
-                    
                 } 
                 else if (_this.colorMode == 'hex') {
-                    if (!_this.colorCodeChk) {
+                    if (_this.colorCodeChk) {
                         for (var i = 1; i <= _this.number; i++) {
                             _this.hexInit();
                             _this.HEXarray[i] = _this.HEXlist;
@@ -138,188 +129,242 @@
                             _this.HEXlist = '';
                         }
                     } else {
-                        if (_this.colorCodeRandom) {
-                            for (var i = 1; i <= _this.number; i++) {
-                                _this.hexInit();
-                                _this.HEXarray[i] = _this.HEXlist;
-
-                                _this.HEXlist = '';
-                            }
-                        } else {
-                            _this.hexInit();
-                        }
+                        _this.hexInit();
+                        _this.HEXarray.push(_this.HEXlist);
                     }
-                    
                 }
             },
 
             rgbInit : function() {
                 var _this = this;
 
-                if (!_this.colorCodeChk) {
-                    for (var i = 1; i <= 3; i++) {
-                        _this.randomColor = parseInt(Math.random() * (_this.max - _this.min) + _this.min);
-                        var _RGB = _this.randomColor;
-                        _this.RGBlist.push(_RGB);
-                    }
-
-                    return _this.RGBlist;
-                } else {
-                    if (_this.colorCodeRandom) {
-                        for (var i = 1; i <= 1; i++) {
-                            _this.randomColor = parseInt(Math.random() * (_this.max - _this.min) + _this.min);
-                            var _RGB = _this.randomColor;
-                            _this.RGBlist.push(_RGB);
-                        }
-
-                        return _this.RGBlist;
-                    } else {
-                        _this.RGBarray = [0,255];
-                    }
+                for (var i = 1; i <= 3; i++) {
+                    _this.randomColor = parseInt(Math.random() * (_this.max - _this.min) + _this.min);
+                    var _RGB = _this.randomColor;
+                    _this.RGBlist.push(_RGB);
                 }
+
+                return _this.RGBlist;
             },
 
             hexInit : function() {
                 var _this = this;
                 var _HEX = 'ABCDEF0123456789';
 
-                if (!_this.colorCodeChk) {
-                    for (var i = 0; i < 6; i++) {
-                        _this.HEXlist += _HEX.charAt(Math.floor(Math.random() * _HEX.length));
-                        _this.HEXlist = _this.HEXlist.replace('undefined', '');
-                    }
-
-                    return _this.HEXlist;
-                } else {
-                    if (_this.colorCodeRandom) {
-                        for (var i = 0; i < 2; i++) {
-                            _this.HEXlist += _HEX.charAt(Math.floor(Math.random() * _HEX.length));
-                            _this.HEXlist = _this.HEXlist.replace('undefined', '');
-                        }
-
-                        return _this.HEXlist;
-                    } else {
-                        _this.HEXarray = _HEX.split("");
-                    }
-                    
+                for (var i = 0; i < 6; i++) {
+                    _this.HEXlist += _HEX.charAt(Math.floor(Math.random() * _HEX.length));
+                    _this.HEXlist = _this.HEXlist.replace('undefined', '');
                 }
+
+                return _this.HEXlist;
             },
 
             colorInit : function() {
                 var _this = this;
 
                 if (_this.colorMode == 'rgb') {
-                    if (!_this.colorCodeChk) {
+                    if (_this.colorCodeChk) {
                         for (var i = 1; i <= _this.number; i++) {
-                            $('[data-color="' + i + '"]')[0].style.backgroundColor = 'rgb(' + _this.RGBarray[i][0] + ',' + _this.RGBarray[i][1] + ',' + _this.RGBarray[i][2] + ')';
+                            $('[data-color="' + i + '"]').css('background', 'rgb(' + _this.RGBarray[i][0] + ',' + _this.RGBarray[i][1] +  ',' + _this.RGBarray[i][2] + ')');
                         }
                     } else {
-                        for (var i = 1; i <= _this.number; i++) {
-                            var _code = _this.colorCodeRandom ? _this.RGBarray[i][0] : _this.RGBarray[1];
-
-                            if (_this.colorCode == 'red') {
-                                // $('[data-color="' + i + '"]')[0].style.backgroundColor = 'rgb(' + _code + ',' + 0 + ',' + 0 + ')';
-                            } else if (_this.colorCode == 'green') {
-                                // $('[data-color="' + i + '"]')[0].style.backgroundColor = 'rgb(' + 0 + ',' + _code + ',' + 0 + ')';
-                            } else if (_this.colorCode == 'blue') {
-                                // $('[data-color="' + i + '"]')[0].style.backgroundColor = 'rgb(' + 0 + ',' + 0 + ',' + _code + ')';
-                            }
-                        }
+                        $(_this.colorObj).css('background', 'rgb(' + _this.RGBlist[0] + ',' + _this.RGBlist[1] + ',' + _this.RGBlist[2] + ')');
                     }
-                    
                 } 
                 else if (_this.colorMode == 'hex') {
-                    if (!_this.colorCodeChk) {
+                    if (_this.ColorCodeChk) {
                         for (var i = 1; i <= _this.number; i++) {
-                            $('[data-color="' + i + '"]')[0].style.backgroundColor = '#' + _this.HEXarray[i];
+                            $('[data-color="' + i + '"]').css('background', '#' + _this.HEXarray[i]);
                         }
                     } else {
-                        for (var i = 1; i <= _this.number; i++) {
-                            // var _code = _this.colorCodeRandom ? _this.HEXarray[i] : _this.HEXarray[5] + _this.HEXarray[5];
-
-                            if (_this.colorCode == 'red') {
-                                $('[data-color="' + i + '"]')[0].style.backgroundColor = '#' + _code + 0 + 0 + 0 + 0;
-                            } else if (_this.colorCode == 'green') {
-                                $('[data-color="' + i + '"]')[0].style.backgroundColor = '#' + 0 + 0 + _code + 0 + 0;
-                            } else if (_this.colorCode == 'blue') {
-                                $('[data-color="' + i + '"]')[0].style.backgroundColor = '#' + 0 + 0 + 0 + 0 + _code;
-                            }
-                            
-                        }
+                        $(_this.colorObj).css('background', '#' + _this.HEXarray[0]);
                     }
-
                 }
             },
 
-            colorChange : function(e, _obj) {
+            changeEvInit : function(e, _obj) {
                 var _this = e.data;
                 var _AttrDataColor = _obj.attr('data-color');
                 var _obj_ = _this.effectMotion == 'multi' ? _this.colorList : _obj;
-                var _BackgroundColor = _obj[0].style.backgroundColor;
-                var _changeColor;
-
-                // 마우스 오버 효과
-                if (_this.effectEvent == 'mouseenter') {
-                    // 처음 노출되는 색상이 3원색인 경우
-                    if (_this.colorCodeChk) {
-                        
-
-                        // RGB값을 HEX값으로 변경
-                        if (_this.colorMode == 'hex') {
-                            var _hex = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
-                            _hex.forEach(function(str, x, arr) {
-                                str = parseInt(str, 10).toString(16);
-                                if (str.length === 1) {str = "0" + str};
-
-                                arr[x] = str;
-                            });
-                            
-                            _changeColor = _BackgroundColor[1].split("");
-                        } 
-                        else if (_this.colorMode == 'rgb') {
-                            var _rgb = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
-                            
-                            _changeColor = parseInt(_rgb[1]) - parseInt(Math.random() * (10 - 0) + 0);;
-                            if (_rgb[1] <= 0) {_changeColor = 255}
-                            
-                            $(_obj_).css('background', 'rgb(' + _rgb[0] + ',' + _changeColor + ',' + _rgb[2] + ')');
-                            _rgb[1] = _changeColor;
-                        };
-                    } 
-                    // 처음 노출되는 색상이 랜덤인 경우
-                    else {}
-                }
-
-                // 마우스 클릭 효과
-                else if (_this.effectEvent == 'click') {
-                    // 처음 노출되는 색상이 3원색인 경우
-                    if (_this.colorCodeChk) {
-                        // RGB값을 HEX값으로 변경
-                        if (_this.colorMode == 'hex') {
-                            var _hex = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
-                            _hex.forEach(function(str, x, arr) {
-                                str = parseInt(str, 10).toString(16);
-                                if (str.length === 1) {str = "0" + str};
-
-                                arr[x] = str;
-                            });
-                            
-                            _changeColor = _BackgroundColor[1].split("");
-                        } 
-                        else if (_this.colorMode == 'rgb') {
-                            var _rgb = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
-                            
-                            _changeColor = parseInt(_rgb[1]) - parseInt(Math.random() * (10 - 0) + 0);;
-                            if (_rgb[1] <= 0) {_changeColor = 255}
-                            
-                            $(_obj_).css('background', 'rgb(' + _rgb[0] + ',' + _changeColor + ',' + _rgb[2] + ')');
-                            _rgb[1] = _changeColor;
-                        };
-                    }
-                    // 처음 노출되는 색상이 랜덤인 경우
-                    else{}
-                }
+                var _BackgroundColor;
+                var _changeColor = new Array();
+                var _fir; var _sec; var _thr; var _rgb; var _hex;
                 
+                // RGB값을 HEX값으로 변경
+                if (_this.colorMode == 'rgb') {
+
+                    if (_this.effectMotion == 'single') {
+                        _BackgroundColor = _obj_[0].style.backgroundColor;
+                        _rgb = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
+
+                        _fir = _rgb[0]; _sec = _rgb[1]; _thr = _rgb[2];
+                        _fir -= _this.rgbCodeChangeNum; _sec -= _this.rgbCodeChangeNum; _thr -= _this.rgbCodeChangeNum;
+
+                        if (_fir < 0)  _fir = 255; if (_sec < 0) _sec = 255; if (_thr < 0) _thr = 255;
+                        _obj_[0].style.backgroundColor = 'rgb(' + _fir + ',' + _sec + ',' + _thr + ')';
+                    }
+                    else if (_this.effectMotion == 'multi') {
+                        for (var i = 0; i <= _this.number - 1; i++) {
+                            _BackgroundColor = _obj_[i].style.backgroundColor;
+                            _rgb = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
+
+                            _changeColor.push(_rgb);
+
+                            _fir = _changeColor[i][0]; _sec = _changeColor[i][1]; _thr = _changeColor[i][2];
+                            _fir -= _this.rgbCodeChangeNum; _sec -= _this.rgbCodeChangeNum; _thr -= _this.rgbCodeChangeNum;
+
+                            if (_fir < 0)  _fir = 255; if (_sec < 0) _sec = 255; if (_thr < 0) _thr = 255;
+                            _obj_[i].style.backgroundColor = 'rgb(' + _fir + ',' + _sec + ',' + _thr + ')';
+                        }
+                    }
+                    
+                }
+                else if (_this.colorMode == 'hex') {
+                    
+                    if (_this.effectMotion == 'single'){
+                        _BackgroundColor = _obj_[0].style.backgroundColor;
+                        _hex = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
+                        _hex.forEach(function(str, x, arr) {
+                            str = parseInt(str, 10).toString(16);
+                            if (str.length === 1) {str = "0" + str};
+
+                            arr[x] = str;
+                        });
+
+                        _changeColor.push(_hex);
+                        _fir = _changeColor[0][0].split(""); _sec = _changeColor[0][1].split(""); _thr = _changeColor[0][2].split("");
+
+                        if (isNaN(Number(_fir[0])) && isNaN(Number(_sec[0])) && isNaN(Number(_thr[0]))) { firString(); } else { firNumber(); }
+                        if (isNaN(Number(_fir[1])) && isNaN(Number(_sec[1])) && isNaN(Number(_thr[1]))) { lasString(); } else { lasNumber(); }
+
+                        _obj_[0].style.backgroundColor = '#' + _fir[0] + _fir[1] + _sec[0] + _sec[1] + _thr[0] + _thr[1];
+                    }
+
+                    else if (_this.effectMotion == 'multi') {
+                        for (var i = 0; i <= _this.number - 1; i++) {
+                            _BackgroundColor = _obj_[i].style.backgroundColor;
+                            _hex = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
+
+                            _hex.forEach(function(str, x, arr) {
+                                str = parseInt(str, 10).toString(16);
+                                if (str.length === 1) {str = "0" + str};
+
+                                arr[x] = str;
+                            });
+
+                            _changeColor.push(_hex);
+                            _fir = _changeColor[i][0].split(""); _sec = _changeColor[i][1].split(""); _thr = _changeColor[i][2].split("");
+                            
+                            if (isNaN(Number(_fir[0])) && isNaN(Number(_sec[0])) && isNaN(Number(_thr[0]))) { firString(); } else { firNumber(); };
+                            if (isNaN(Number(_fir[1])) && isNaN(Number(_sec[1])) && isNaN(Number(_thr[1]))) { lasString(); } else { lasNumber(); };
+
+                            _obj_[i].style.backgroundColor = '#' + _fir[0] + _fir[1] + _sec[0] + _sec[1] + _thr[0] + _thr[1];
+                        }
+                        
+                    }
+
+                    function firString() {
+                        if (_fir[0] == 'a' && _sec[0] == 'a' && _thr[0] == 'a') {_fir[0] = 'b'; _sec[0] = 'b'; _thr[0] = 'b';}
+                        else if (_fir[0] == 'b' && _sec[0] == 'b' && _thr[0] == 'b') {_fir[0] = 'c'; _sec[0] = 'c'; _thr[0] = 'c';}
+                        else if (_fir[0] == 'c' && _sec[0] == 'c' && _thr[0] == 'c') {_fir[0] = 'd'; _sec[0] = 'd'; _thr[0] = 'd';}
+                        else if (_fir[0] == 'd' && _sec[0] == 'd' && _thr[0] == 'd') {_fir[0] = 'e'; _sec[0] = 'e'; _thr[0] = 'e';}
+                        else if (_fir[0] == 'e' && _sec[0] == 'e' && _thr[0] == 'e') {_fir[0] = 'f'; _sec[0] = 'f'; _thr[0] = 'f';}
+                        else if (_fir[0] == 'f' && _sec[0] == 'f' && _thr[0] == 'f') {_fir[0] = 9; _sec[0] = 9; _thr[0] = 9;}
+                    }
+
+                    function lasString() {
+                        if (_fir[1] == 'a' && _sec[1] == 'a' && _thr[1] == 'a') {_fir[1] = 'b'; _sec[1] = 'b'; _thr[1] = 'b';}
+                        else if (_fir[1] == 'b' && _sec[1] == 'b' && _thr[1] == 'b') {_fir[1] = 'c'; _sec[1] = 'c'; _thr[1] = 'c';}
+                        else if (_fir[1] == 'c' && _sec[1] == 'c' && _thr[1] == 'c') {_fir[1] = 'd'; _sec[1] = 'd'; _thr[1] = 'd';}
+                        else if (_fir[1] == 'd' && _sec[1] == 'd' && _thr[1] == 'd') {_fir[1] = 'e'; _sec[1] = 'e'; _thr[1] = 'e';}
+                        else if (_fir[1] == 'e' && _sec[1] == 'e' && _thr[1] == 'e') {_fir[1] = 'f'; _sec[1] = 'f'; _thr[1] = 'f';}
+                        else if (_fir[1] == 'f' && _sec[1] == 'f' && _thr[1] == 'f') {_fir[1] = 9; _sec[1] = 9; _thr[1] = 9;}
+                    }
+
+                    function firNumber() {
+                        if (_fir[0] > 0 && _sec[0] > 0 && _thr[0] > 0) {_fir[0] -= 1; _sec[0] -= 1; _thr[0] -= 1;}
+                        else {_fir[0] = 'a'; _sec[0] = 'a'; _thr[0] = 'a';}
+                    }
+
+                    function lasNumber() {
+                        if (_fir[1] > 0 && _sec[1] > 0 && _thr[1] > 0) {_fir[1] -= 1; _sec[1] -= 1; _thr[1] -= 1;}
+                        else {_fir[1] = 'a'; _sec[1] = 'a'; _thr[1] = 'a';}
+                    }
+                };
+            },
+
+            autoplayEvInit : function() {
+                var _this = this;
+                var _BackgroundColor;
+                var _changeColor = new Array();
+                var i = 0;
+                var _fir; var _sec; var _thr; var _rgb; var _hex;
+
+                setInterval(function(){
+                    _BackgroundColor = _this.colorList[i].style.backgroundColor;
+
+                    if (_this.colorMode == 'rgb') {
+                        _rgb = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
+
+                        _fir = _rgb[0]; _sec = _rgb[1]; _thr = _rgb[2];
+                        _fir -= _this.rgbCodeChangeNum; _sec -= _this.rgbCodeChangeNum; _thr -= _this.rgbCodeChangeNum;
+
+                        if (_fir < 0)  _fir = 255; if (_sec < 0) _sec = 255; if (_thr < 0) _thr = 255;
+                        _this.colorList[i].style.backgroundColor = 'rgb(' + _fir + ',' + _sec + ',' + _thr + ')';
+                    }
+                    else if (_this.colorMode == 'hex') {
+                        _hex = _BackgroundColor.replace(/[^%,.\d]/g,"").split(",");
+                        _hex.forEach(function(str, x, arr) {
+                            str = parseInt(str, 10).toString(16);
+                            if (str.length === 1) {str = "0" + str};
+
+                            arr[x] = str;
+                        });
+
+                        _changeColor.push(_hex);
+                        _fir = _changeColor[0][0].split(""); _sec = _changeColor[0][1].split(""); _thr = _changeColor[0][2].split("");
+
+                        if (isNaN(Number(_fir[0])) && isNaN(Number(_sec[0])) && isNaN(Number(_thr[0]))) { firString(); } else { firNumber(); }
+                        if (isNaN(Number(_fir[1])) && isNaN(Number(_sec[1])) && isNaN(Number(_thr[1]))) { lasString(); } else { lasNumber(); }
+
+                        _this.colorList[i].style.backgroundColor = '#' + _fir[0] + _fir[1] + _sec[0] + _sec[1] + _thr[0] + _thr[1];
+
+                        function firString() {
+                            if (_fir[0] == 'a' && _sec[0] == 'a' && _thr[0] == 'a') {_fir[0] = 'b'; _sec[0] = 'b'; _thr[0] = 'b';}
+                            else if (_fir[0] == 'b' && _sec[0] == 'b' && _thr[0] == 'b') {_fir[0] = 'c'; _sec[0] = 'c'; _thr[0] = 'c';}
+                            else if (_fir[0] == 'c' && _sec[0] == 'c' && _thr[0] == 'c') {_fir[0] = 'd'; _sec[0] = 'd'; _thr[0] = 'd';}
+                            else if (_fir[0] == 'd' && _sec[0] == 'd' && _thr[0] == 'd') {_fir[0] = 'e'; _sec[0] = 'e'; _thr[0] = 'e';}
+                            else if (_fir[0] == 'e' && _sec[0] == 'e' && _thr[0] == 'e') {_fir[0] = 'f'; _sec[0] = 'f'; _thr[0] = 'f';}
+                            else if (_fir[0] == 'f' && _sec[0] == 'f' && _thr[0] == 'f') {_fir[0] = 9; _sec[0] = 9; _thr[0] = 9;}
+                        }
+
+                        function lasString() {
+                            if (_fir[1] == 'a' && _sec[1] == 'a' && _thr[1] == 'a') {_fir[1] = 'b'; _sec[1] = 'b'; _thr[1] = 'b';}
+                            else if (_fir[1] == 'b' && _sec[1] == 'b' && _thr[1] == 'b') {_fir[1] = 'c'; _sec[1] = 'c'; _thr[1] = 'c';}
+                            else if (_fir[1] == 'c' && _sec[1] == 'c' && _thr[1] == 'c') {_fir[1] = 'd'; _sec[1] = 'd'; _thr[1] = 'd';}
+                            else if (_fir[1] == 'd' && _sec[1] == 'd' && _thr[1] == 'd') {_fir[1] = 'e'; _sec[1] = 'e'; _thr[1] = 'e';}
+                            else if (_fir[1] == 'e' && _sec[1] == 'e' && _thr[1] == 'e') {_fir[1] = 'f'; _sec[1] = 'f'; _thr[1] = 'f';}
+                            else if (_fir[1] == 'f' && _sec[1] == 'f' && _thr[1] == 'f') {_fir[1] = 9; _sec[1] = 9; _thr[1] = 9;}
+                        }
+
+                        function firNumber() {
+                            if (_fir[0] > 0 && _sec[0] > 0 && _thr[0] > 0) {_fir[0] -= 1; _sec[0] -= 1; _thr[0] -= 1;}
+                            else {_fir[0] = 'a'; _sec[0] = 'a'; _thr[0] = 'a';}
+                        }
+
+                        function lasNumber() {
+                            if (_fir[1] > 0 && _sec[1] > 0 && _thr[1] > 0) {_fir[1] -= 1; _sec[1] -= 1; _thr[1] -= 1;}
+                            else {_fir[1] = 'a'; _sec[1] = 'a'; _thr[1] = 'a';}
+                        }
+                    };
+
+                    i += 1;
+
+                    if (i >= _this.number) {
+                        i = 0;
+                    }
+
+                }, _this.autodelay)
             }
         }
     </script>
@@ -332,10 +377,10 @@
             effectMotion: 'single',
             effectEvent: 'click',
             colorMode: 'hex',
-            colorCodeChk: true,
-            // colorCodeRandom: true,
-            colorCode: 'red',
-            codeChangeNum: 10,
+            // colorCodeChk: true,
+            // autoplay: true,
+            // autodelay: 2000,
+            // rgbCodeChangeNum: 10,
             lineLength: 4,
             colorObj: 'li'
         })
