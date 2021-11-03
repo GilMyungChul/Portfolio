@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>circle effect</title>
+
+    <link rel="stylesheet" href="/resource/reset.css"></link>
+    <link rel="stylesheet" href="/resource/common.css"></link>
+
+    <script src="/resource/jquery-3.5.1.min.js"></script>
+    <script src="/resource/jquery-ui.min.js"></script>
+</head>
+<body>
+    <div class="wrap">
+        <div>
+            <ul class="circleEffect"></ul>
+        </div>
+    </div>
+
+    <script>
+
+        function effect(opt) {
+
+            this.pageXY = function(e) {
+                var pageX = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageX : e.originalEvent.pageX;                               // swiper X축
+                var pageY = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].pageY : e.originalEvent.pageY;                               // swiper Y축
+                var pageXY = new Array(pageX, pageY);
+
+                return pageXY;
+            };
+
+            this.effectMode = opt.effectMode,
+            this.target = opt.target,
+            this.arrayDiameter = opt.arrayDiameter,
+            this.length = opt.length,
+
+            this.circleObj;
+            this.childObj;
+
+            this.min_x = 0;
+            this.max_x = $(window).width();
+
+            this.min_y = 0;
+            this.max_y = $(window).height();
+
+            this.randomX;
+            this.randomY;
+            
+            this.childWidth = new Array();
+            this.childHeight = new Array();
+            this.childOL = new Array();
+            this.childOT = new Array();
+
+            this.init();
+        }
+
+        // 제곱근 : Math.pow(값, 제곱근)
+        // 루트 : Math.sqrt()
+
+        effect.prototype = {
+            init : function() {
+
+                this.circleInit();
+                this.circleSet();
+                this.playInit();
+                
+                // this.events();
+            },
+
+            circleInit : function() {
+                var _this = this;
+
+                $(_this.target).css({'width':_this.max_x, 'height':_this.max_y})
+
+                for (var i = 1; i <= _this.length; i++) {
+                    _this.randomX = parseInt(Math.random() * (_this.max_x - _this.min_x) + _this.min_x);
+                    _this.randomY = parseInt(Math.random() * (_this.max_y - _this.min_y) + _this.min_y);
+                    
+                    var _list = '<li style="left:' + _this.randomX + 'px; top:' + _this.randomY + 'px; width:' + _this.arrayDiameter[i-1] + 'px; height:' + _this.arrayDiameter[i-1] + 'px;"><span style="left:' + (_this.arrayDiameter[i-1]/2 - _this.arrayDiameter[i-1] * 0.05 / 2) + 'px; top:' + - _this.arrayDiameter[i-1] * 0.05 / 2 + 'px;width:' + (_this.arrayDiameter[i-1] * 0.05) + 'px; height:' + (_this.arrayDiameter[i-1] * 0.05) + 'px;">' + i + '</span></li>';
+                    $(_this.target).append(_list);
+                }
+
+                _this.circleObj = $(_this.target).find('li');
+                _this.childObj = $(_this.circleObj).find('span');
+
+                for (var i = 0; i <= _this.length - 1; i++) {
+                    var _maxLeft = _this.max_x - _this.arrayDiameter[i];
+                    var _maxTop = _this.max_y - _this.arrayDiameter[i];
+
+                    if (parseInt(_this.circleObj[i].style.left) > _maxLeft && parseInt(_this.circleObj[i].style.top) > _maxTop) {
+                        $(_this.circleObj).eq(i).css('left', _maxLeft);
+                        $(_this.circleObj).eq(i).css('top', _maxTop);
+                    } else if (parseInt(_this.circleObj[i].style.left) > _maxLeft) {
+                        $(_this.circleObj).eq(i).css('left', _maxLeft);
+                    } else if (parseInt(_this.circleObj[i].style.top) > _maxTop) {
+                        $(_this.circleObj).eq(i).css('top', _maxTop);
+                    }
+                }
+            },
+
+            circleSet : function() {
+                var _this = this;
+                var _width; var _height; var _offsetLeft; var _offsetTop;
+
+                for (var i = 0; i <= _this.length - 1; i++) {
+                    _width = $(_this.circleObj).eq(i).children().width();
+                    _height = $(_this.circleObj).eq(i).children().height();
+                    _offsetLeft = $(_this.circleObj).eq(i).children().offset().left;
+                    _offsetTop = $(_this.circleObj).eq(i).children().offset().top;
+
+                    _this.childWidth.push(_width); _this.childHeight.push(_height); _this.childOL.push(_offsetLeft); _this.childOT.push(_offsetTop);
+                }
+            },
+            
+            playInit : function() {
+                var _this = this;
+                var d = 90;
+                var i = 0;
+                var _deg = d * Math.PI/180;
+                var _x; var _cos; var _left;
+                var _y; var _sin; var _top;
+
+                var setIn = setInterval(function(){
+                    _deg = d * Math.PI / 180;
+
+                    _cos = Math.cos(_deg); _x = _cos * _this.arrayDiameter[i]/2;
+                    _sin = Math.sin(_deg); _y = _sin * _this.arrayDiameter[i]/2;
+
+                    _left = _this.arrayDiameter[i]/2 + _x - $(_this.circleObj).eq(i).children().width()/2;
+                    _top = _this.arrayDiameter[i]/2 - _y - $(_this.circleObj).eq(i).children().height()/2;
+                    
+                    // $(_this.circleObj).eq(i).children().css({'left': Math.floor(_left), 'top': Math.floor(_top)});
+
+                    i += 1;
+                    if (i >= _this.length) {i = 0; d -= 10;};
+
+                    if (d <= -180) {
+                        d = 180;
+                    };
+                    
+
+                }, 100)
+            }
+        }
+
+    </script>
+
+    <script>
+        var circle = new effect({
+            effectMode: 'circle',
+            target: $('.circleEffect'),
+            // arrayDiameter: [250],
+            arrayDiameter: [250, 200, 350, 150, 300, 400, 250, 200],
+            length: 8,
+        })
+    </script>
+    
+</body>
+</html>
