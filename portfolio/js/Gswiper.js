@@ -26,6 +26,9 @@
     ====================== ver 1.1 ======================
         * 2021-08-27
         - 일부 소스 변경
+    ====================== ver 1.11 ======================
+        * 2021-11.08
+        - 'mergeTarget' 존재하는 경우 스와이프 오류 수정
 ***/
 
 function Gswiper (opt) {
@@ -320,7 +323,7 @@ Gswiper.prototype = {
     // event list
     eventBox : function() {
         var _this = this;
-
+        
         $(_this.targetName)
             .unbind(_this.evtTypeStart).bind(_this.evtTypeStart, _this, function(e){_this.eventDown(e)})
             .unbind(_this.evtTypeMove).bind(_this.evtTypeMove, _this, function(e){_this.eventMove(e)})
@@ -407,7 +410,7 @@ Gswiper.prototype = {
     // mousemove, touchmove
     eventMove : function(e) {
         var _this = e.data;
-        if (_this.eventMoveChk === true) {_this.pageDragValue(e);}
+        if (_this.eventMoveChk === true) { _this.pageDragValue(e); }
     },
 
     // mouseup, touchend
@@ -426,12 +429,7 @@ Gswiper.prototype = {
         var _this = e.data;
         
         if (_this.mergeObj) {
-            var obj = 'next';
-            if (_this.viewIndex != _this.mergeObj.viewIndex) {
-                _this.mergeObjValue(e, obj);
-            } else {
-                $(_this.mergeObj.nextBtn).trigger('click');
-            }
+            $(_this.mergeObj.nextBtn).trigger('click');
         } 
 
         _this.eventClickChk = true;
@@ -449,12 +447,7 @@ Gswiper.prototype = {
         var _this = e.data;
 
         if (_this.mergeObj) {
-            var obj = 'prev';
-            if (_this.viewIndex != _this.mergeObj.viewIndex) {
-                _this.mergeObjValue(e, obj);
-            } else {
-                $(_this.mergeObj.prevBtn).trigger('click');
-            }
+            $(_this.mergeObj.prevBtn).trigger('click');
         } 
 
         _this.eventClickChk = true;
@@ -465,19 +458,6 @@ Gswiper.prototype = {
 
         _this.eventClickChk = false;
         _this.swiperEndChk(e);
-    },
-
-    // Simultaneous value merge
-    mergeObjValue : function(e, obj) {
-        var _this = this;
-        var mergeIndex = obj === 'next' ? _this.viewIndex + 1 : _this.viewIndex - 1;
-
-        _this.mergeObj.curX = - _this.mergeObj.swiperWidth * (mergeIndex + (_this.mergeObj.cloneLength / 2)) - 2 * _this.mergeObj.between * (mergeIndex + (_this.mergeObj.cloneLength / 2)) - _this.mergeObj.between;
-        _this.mergeObj.targetName.css(_this.mergeObj.transition_Property, _this.mergeObj.curX + 'px').find('> div').not('.clone').removeClass('active').eq(mergeIndex).addClass('active');
-        _this.mergeObj.targetName[0].style.transitionProperty = _this.mergeObj.transition_Property;
-        _this.mergeObj.targetName[0].style.transitionDuration = _this.mergeObj.transition_Duration;
-
-        $(_this.mergeObj.indicatorDot).removeClass('active').eq(mergeIndex).addClass('active');
     },
 
     // indicator
@@ -548,7 +528,6 @@ Gswiper.prototype = {
 
     // swipe end check, auto rolling return value
     swiperEndChk : function(e, _obj) {
-
         if (_obj) {
             var _this = e;
         } else {
@@ -581,8 +560,6 @@ Gswiper.prototype = {
             }; 
             
             if (_this.loop === false && _this.autoPlay === true) {
-
-                console.log('asdasd')
                 
                 if (_this.curIndex == _this.lastIndex) {
                     _this.moveXY = -_this.between;
@@ -591,9 +568,8 @@ Gswiper.prototype = {
                     _this.indexValue(e);
                 }
             };
-            
+
             _this.viewIndex = _this.curIndex;
-            // _this.curX = _this.moveXY
             _this.objectDataValue(e);
             _this.swiperMoveValue(_this);
 
@@ -686,7 +662,7 @@ Gswiper.prototype = {
         } else {
             var _this = e.data;
         }
-
+        
         _this.moveXY = _this.curXY - _this.swiperWH - (_this.between * 2);
         _this.curIndex = _this.nextIndex;
         _this.transition_Duration = _this.swiperSpeed;
@@ -767,7 +743,8 @@ Gswiper.prototype = {
         } else {
             _locIndex = _this.curIndex;
         };
-        
+
+        if (_this.mergeObj) { $(_this.mergeObj.swiperItem).removeClass('active').not('.clone').eq(_locIndex).addClass('active'); };
         $(_this.swiperItem).removeClass('active').not('.clone').eq(_locIndex).addClass('active');
 
         // 'dot' value
