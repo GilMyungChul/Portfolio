@@ -670,7 +670,7 @@ Gswiper.prototype = {
         _this.transition_Duration = _this.swiperSpeed;
 
         if(_this.mergeObj) {
-            if (_this.mergeObj.viewIndex != _this.viewIndex) {
+            if (_this.mergeObj.curIndex != _this.curIndex) {
                 _this.mergeObj.curIndex = _this.curIndex;
                 _this.mergeObj.moveXY = _this.moveXY;
                 $(_this.mergeObj.targetName).css('left', _this.moveXY)
@@ -699,7 +699,7 @@ Gswiper.prototype = {
         _this.transition_Duration = _this.swiperSpeed;
 
         if(_this.mergeObj) {
-            if (_this.mergeObj.viewIndex != _this.viewIndex) {
+            if (_this.mergeObj.curIndex != _this.curIndex) {
                 _this.mergeObj.curIndex = _this.curIndex;
                 _this.mergeObj.moveXY = _this.moveXY;
                 $(_this.mergeObj.targetName).css('left', _this.moveXY)
