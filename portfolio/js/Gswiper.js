@@ -27,8 +27,10 @@
         * 2021-08-27
         - 일부 소스 변경
     ====================== ver 1.11 ======================
-        * 2021-11.08
+        * 2021-11-08
         - 'mergeTarget' 존재하는 경우 스와이프 오류 수정
+        * 2021-11-09
+        - 'mergeTarget' 존재하는 경우 서로 다르게 스와이프는 가능하며, button, indicator 클릭 시, 부모의 index의 따라 자식도 동일하게 스와이프 적용
 ***/
 
 function Gswiper (opt) {
@@ -395,7 +397,7 @@ Gswiper.prototype = {
     // mousedown, touchstart
     eventDown : function(e) {
         var _this = e.data;
-        
+
         _this.eventMouseUpChk = false;
         _this.eventMoveChk = true;
         _this.transitionIng = true;
@@ -427,7 +429,7 @@ Gswiper.prototype = {
     // next button
     nextBtnClick : function(e) {
         var _this = e.data;
-        
+
         if (_this.mergeObj) {
             $(_this.mergeObj.nextBtn).trigger('click');
         } 
@@ -454,7 +456,7 @@ Gswiper.prototype = {
         _this.transitionIng = true;
         _this.objectDataValue(e);
         
-        if (_this.eventClickChk === true) {_this.prevBtnValue(_this);}
+        if (_this.eventClickChk === true) {_this.prevBtnValue(e);}
 
         _this.eventClickChk = false;
         _this.swiperEndChk(e);
@@ -593,7 +595,7 @@ Gswiper.prototype = {
         } else if (curPageXY > locPageXY) {
             _this.prevEventValue(e)
         }
-        
+
         _this.swiperMoveValue(_this);
         _this.indexValue(_this);
         
@@ -666,6 +668,14 @@ Gswiper.prototype = {
         _this.moveXY = _this.curXY - _this.swiperWH - (_this.between * 2);
         _this.curIndex = _this.nextIndex;
         _this.transition_Duration = _this.swiperSpeed;
+
+        if(_this.mergeObj) {
+            if (_this.mergeObj.viewIndex != _this.viewIndex) {
+                _this.mergeObj.curIndex = _this.curIndex;
+                _this.mergeObj.moveXY = _this.moveXY;
+                $(_this.mergeObj.targetName).css('left', _this.moveXY)
+            }
+        }
         
         if (_this.loop === false) {
             if (_this.curIndex > _this.lastIndex) {
@@ -682,11 +692,19 @@ Gswiper.prototype = {
 
     // prev button value set
     prevBtnValue : function(e) {
-        var _this = e;
+        var _this = e.data;
 
         _this.moveXY = _this.curXY + _this.swiperWH + (_this.between * 2);
         _this.curIndex = _this.prevIndex;
         _this.transition_Duration = _this.swiperSpeed;
+
+        if(_this.mergeObj) {
+            if (_this.mergeObj.viewIndex != _this.viewIndex) {
+                _this.mergeObj.curIndex = _this.curIndex;
+                _this.mergeObj.moveXY = _this.moveXY;
+                $(_this.mergeObj.targetName).css('left', _this.moveXY)
+            }
+        }
 
         if (_this.loop === false) {
             if (_this.curIndex < 0) {
@@ -774,7 +792,6 @@ Gswiper.prototype = {
         };
 
         _this.viewIndex = _this.curIndex;
-
     }
 
 }
