@@ -19,7 +19,7 @@
     ====================== ver 1.1 ======================
         * 2021-04-07
         - autoPlay 추가
-        - 인디케이터, 버튼을 통한 동시 스와이프 추가
+        - 인디케이터, 버튼을 통한 다른 객체가 동시에 스와이프 기능 추가
         * 2021-05-25
         - 2개가 동시에 스와이프 되는 조건 설정
         - mouseenter / mouseleave로 autoPlay 컨트롤
@@ -31,6 +31,7 @@
         - 'mergeTarget' 존재하는 경우 스와이프 오류 수정
         * 2021-11-09
         - 'mergeTarget' 존재하는 경우 서로 다르게 스와이프는 가능하며, button, indicator 클릭 시, 부모의 index의 따라 자식도 동일하게 스와이프 적용
+        - autoplay 버그수정 (event : 'mouseenter', 'mouseleave')
 ***/
 
 function Gswiper (opt) {
@@ -330,17 +331,13 @@ Gswiper.prototype = {
             .unbind(_this.evtTypeStart).bind(_this.evtTypeStart, _this, function(e){_this.eventDown(e)})
             .unbind(_this.evtTypeMove).bind(_this.evtTypeMove, _this, function(e){_this.eventMove(e)})
             .unbind(_this.evtTypeEnd).bind(_this.evtTypeEnd, _this, function(e){_this.eventUp(e)});
-
-        $(_this.swiperWrapper)
-            .unbind('mouseenter').bind('mouseenter', _this, function(e){_this.mouseEnter(e)})
-            .unbind('mouseleave').bind('mouseleave', _this, function(e){_this.mouseLeave(e)});
             
-        if (_this.swiperBtn === true) {
+        if (_this.swiperBtn) {
             _this.nextBtn.bind('click', _this, function(e){_this.nextBtnClick(e)});
             _this.prevBtn.bind('click', _this, function(e){_this.prevBtnClick(e)});
         }
 
-        if (_this.indicator === true) {
+        if (_this.indicator) {
             $(_this.indicatorDot).bind('click', _this, _this.naviClick);
         }
 
@@ -481,17 +478,6 @@ Gswiper.prototype = {
         _this.swiperEndChk(e);
     },
 
-    // autoPlay stop
-    mouseEnter : function() {
-        this.autoPlayChk = false;
-    },
-
-    // autoPlay start
-    mouseLeave : function() {
-        this.autoPlayChk = true;
-        this.autoPlayInit();
-    },
-
     // swipe data value
     objectDataValue : function(e) {
         var _this = e.data;
@@ -535,7 +521,7 @@ Gswiper.prototype = {
         } else {
             var _this = e.data;
         }
-        
+
         $(_this.targetName).bind("transitionend webkitTransitionEnd", _this, function(e) {
             _this.transitionIng = false;
             $(_this.targetName).unbind("transitionend webkitTransitionEnd");
@@ -559,9 +545,19 @@ Gswiper.prototype = {
                 } else if (_this.curIndex == _this.lastIndex) {
                     _this.curIndex = _this.lastIndex;
                 }
-            }; 
+            };
+
+            if (_this.autoPlay) {
+                $(_this.targetName)
+                    .bind('mouseenter', function(e){ _this.autoPlayChk = false; })
+                    .bind('mouseleave', function(e){ 
+                        _this.autoPlayChk = true;
+                        clearTimeout(_this.autoPlaySet);
+                        _this.autoPlayInit(e);
+                    });
+            }
             
-            if (_this.loop === false && _this.autoPlay === true) {
+            if (!_this.loop && _this.autoPlay) {
                 
                 if (_this.curIndex == _this.lastIndex) {
                     _this.moveXY = -_this.between;
@@ -575,12 +571,13 @@ Gswiper.prototype = {
             _this.objectDataValue(e);
             _this.swiperMoveValue(_this);
 
-            if (_this.autoPlayChk === true) {
+            if (_this.autoPlayChk) {
                 _this.autoPlayInit(e);
             } else {
                 clearTimeout(_this.autoPlaySet);
             };
-        })
+        });
+        
     },
 
     // move common value set
@@ -723,8 +720,6 @@ Gswiper.prototype = {
     naviClickValue : function(e) {
         var _this = e;
         var _cloneLength = _this.loop === true ? _this.cloneLength / 2 : 0;
-        var _num = _this.itemView % 2 ? 'odd' : 'even';                                              // 'odd' 홀수 / 'even' 짝수
-        var _itemView = _num == 'even' ? (_this.itemView > 2 ? _this.itemView / 2 : 0) : parseInt(_this.itemView / 2);
         
         // var _valueAdd = _valueArray.reduce((a , b) => a + b);                                     // 배열 안 객체 합계
         _this.moveXY = - _this.swiperWH * (_this.curNavi + _cloneLength) - _this.between * ( (2 * _this.curNavi) + (2 * _cloneLength) + 1 );
