@@ -56,20 +56,25 @@
                         <div class="swiper-item"><span>Slide 06</span></div>
                         <div class="swiper-item"><span>Slide 07</span></div>
                     </div>
+                    <div class="swiper-btn">
+                        <button type="button" class="btn prev-btn">◀</button>
+                        <button type="button" class="btn next-btn">▶</button>
+                    </div>
+                    <div class="swiper-indicator"></div>
                 </div>
             </div>
     
             <div class="title"><p>'swiper-two'</p></div>
-            <div class="swiper-area" style="padding:0 50px;box-sizing:border-box;">
+            <div class="swiper-area" style="width:500px;margin:0 auto;">
                 <div class="swiper-wrap">
                     <div class="swiper-list swiper_two">
                         <div class="swiper-item"><span>Slide 01</span></div>
                         <div class="swiper-item"><span>Slide 02</span></div>
-                        <div class="swiper-item"><span>Slide 03</span></div>
+                        <div class="swiper-item" style="height:250px;"><span>Slide 03</span></div>
                         <div class="swiper-item"><span>Slide 04</span></div>
                         <div class="swiper-item"><span>Slide 05</span></div>
                         <div class="swiper-item"><span>Slide 06</span></div>
-                        <div class="swiper-item"><span>Slide 07</span></div>
+                        <div class="swiper-item" style="height:250px;"><span>Slide 07</span></div>
                         <div class="swiper-item"><span>Slide 08</span></div>
                     </div>
                     <div class="swiper-btn">
@@ -143,12 +148,44 @@
         </div>
     
         <script type="text/javascript">
+             
+             /*********** option **********
+                targetName          스와이프 타겟 설정 : target
+                mode                스와이프 방향 설정 : 'horizontal' (default), 'vertical'
+                scrolling           스크롤 페러렉스 설정 : 'false' (default)
+                swiperBtn           스와이프 버튼 설정 : 'true' (default), 'false'
+                indicator           인디케이터 : 'true' (default), 'false'
+                indicatorType       인디케이터 종류 : 'dot' (default), 'number', 'bar'
+                between             스와이프 간 간격 : 0 (default), 설정값
+                viewIndex           스와이프 시작시점 : 0 (default), 설정값
+                loop                무한 스와이프 : false (default), true
+                swiperSpeed         스와이프 스피드 : 1s (default), 설정값
+                swiperEffect        스와이프 이펙트 : ease (default), 설정값
+                ingSwiperNot        스와이프 중 이벤트 막기 : false (default), true
+                itemView            스와이프 영역에서 한번에 몇개의 스와이프를 노출 할지 결정 : 1 (default), 설정값
+                itemViewSwiper      노출되는 스와이프가 2개 이상이 경우 스와이프가 되는 개수 결정 : this.itemView (default), 설정값
+                useCss              사용자가 지정된 css값을 사용하게 설정 : false (default), true
+                
+                mergeTarget         멀티 스와이프 적용 [자식 객체 옵션] :: 타겟은 부모 'targetName'으로 설정
+                
+                mergeDotHidden      멀티 스와이프 [자식 스와이프 인디케이터 숨김] : 'hidden' (default), 'visible'
+                mergeBtnHidden      멀티 스와이프 [자식 스와이프 좌/우 버튼 숨김] : 'hidden' (default), 'visible'
+                
+                autoPlay            자동 롤링 : false (default), true
+                autoPlayTime        자동 롤링 타임 : 1000 (default), 설정값
+                
+                
+                autoHeight          스와이프 높이 컨텐츠에 맞게 조정 : false (default), true
+                valueOther          width, height 각 스와이프 오브젝트 마다 다른 경우 : true (default), false
+            *******************************/
+
             var swiper_one = new Gswiper({
                 targetName: $('.swiper_one'),
                 between: 5,
                 viewIndex: 4,
                 itemView: 4,
                 swiperBtn: true,
+                indicatorType: 'bar',
                 loop: true
             });
 
@@ -157,9 +194,9 @@
                 between: 5,
                 viewIndex: 4,
                 itemView: 4,
-                // swiperBtn: false,
+                swiperBtn: true,
                 loop: true,
-                // indicator: false,
+                indicator: true,
                 // mergeDotHidden: 'visible',
                 // mergeBtnHidden: 'visible',
                 mergeTarget: swiper_one
@@ -170,29 +207,26 @@
                 viewIndex: 5,
                 swiperWidth: 500,
                 // loop: true,
-                // autoHeight: true
-                indicatorType: 'number'
+                autoHeight: true,
+                indicatorType: 'number',
+                useCss: true
             });
 
             var swiper_three = new Gswiper({
                 targetName: $('.swiper_three'),
-                // swiperWidth: 500,
-                // swiperHeight: 200,
                 between: 10,
                 itemView: 2,
                 // viewIndex: 2,
                 itemViewSwiper: 2,
-                loop: true
+                loop: true,
                 // useCss : true
-                // autoPlay: true,
-                // autoPlayTime: 1000
+                autoPlay: true,
+                autoPlayTime: 2000
             });
 
             var swiper_four = new Gswiper({
                 targetName: $('.swiper_four'),
                 mode: 'vertical',
-                // swiperWidth: 600,
-                // swiperHeight: 400,
                 between: 5,
                 viewIndex: 3,
                 loop: true
