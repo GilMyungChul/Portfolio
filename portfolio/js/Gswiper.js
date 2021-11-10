@@ -32,6 +32,9 @@
         * 2021-11-09
         - 'mergeTarget' 존재하는 경우 서로 다르게 스와이프는 가능하며, button, indicator 클릭 시, 부모의 index의 따라 자식도 동일하게 스와이프 적용
         - autoplay 버그수정 (event : 'mouseenter', 'mouseleave')
+        * 2021-11-10
+        - autoplay 시, button, indicator의 영향 안받게 설정
+        - button 중복 클릭 
 ***/
 
 function Gswiper (opt) {
@@ -331,15 +334,24 @@ Gswiper.prototype = {
             .unbind(_this.evtTypeStart).bind(_this.evtTypeStart, _this, function(e){_this.eventDown(e)})
             .unbind(_this.evtTypeMove).bind(_this.evtTypeMove, _this, function(e){_this.eventMove(e)})
             .unbind(_this.evtTypeEnd).bind(_this.evtTypeEnd, _this, function(e){_this.eventUp(e)});
+            
+        _this.nextBtn.bind('click', _this, function(e){
+            _this.autoPlayChk = false;
+            clearTimeout(_this.autoPlaySet);
+            if (!_this.eventClickChk) { _this.nextBtnClick(e); }
+        });
 
-        if (!_this.eventClickChk) {
-            _this.nextBtn.bind('click', _this, function(e){_this.nextBtnClick(e)});
-            _this.prevBtn.bind('click', _this, function(e){_this.prevBtnClick(e)});
-        }
-
-        if (!_this.eventClickChk) {
-            $(_this.indicatorDot).bind('click', _this, _this.naviClick);
-        }
+        _this.prevBtn.bind('click', _this, function(e){
+            _this.autoPlayChk = false;
+            clearTimeout(_this.autoPlaySet);
+            if (!_this.eventClickChk) { _this.prevBtnClick(e); }
+        });
+        
+        $(_this.indicatorDot).bind('click', _this, function(e){
+            _this.autoPlayChk = false;
+            clearTimeout(_this.autoPlaySet);
+            _this.naviClick(e, $(this));
+        });
 
         $(window).bind('resize', function(){_this.windowResize();})
         
@@ -367,7 +379,7 @@ Gswiper.prototype = {
     // auto rolling set
     autoPlayInit : function() {
         var _this = this;
-        if (_this.autoPlay == true) {
+        if (_this.autoPlay && _this.autoPlayChk) {
             _this.autoPlaySet = setTimeout(function(){_this.autoPlayEvent()}, _this.autoPlayTime);
         }
     },
@@ -433,12 +445,9 @@ Gswiper.prototype = {
 
         _this.eventClickChk = true;
         _this.transitionIng = true;
-        _this.objectDataValue(e);
 
+        _this.objectDataValue(e);
         _this.nextBtnValue(e);
-        // if (_this.eventClickChk) {_this.nextBtnValue(e);}
-        clearTimeout(_this.autoPlaySet);
-        
         _this.swiperEndChk(e);
     },
 
@@ -452,20 +461,17 @@ Gswiper.prototype = {
 
         _this.eventClickChk = true;
         _this.transitionIng = true;
+
         _this.objectDataValue(e);
-        
         _this.prevBtnValue(e);
-        // if (_this.eventClickChk) {_this.prevBtnValue(e);}
-        clearTimeout(_this.autoPlaySet);
-        
         _this.swiperEndChk(e);
     },
 
     // indicator
-    naviClick : function(e) {
+    naviClick : function(e, _indicator) {
         var _this = e.data;
 
-        _this.curNavi = parseInt($(this).index());
+        _this.curNavi = parseInt(_indicator.index());
 
         if (_this.mergeObj) {
             $(_this.mergeObj.indicatorDot).eq(_this.curNavi).trigger('click');
@@ -473,11 +479,11 @@ Gswiper.prototype = {
 
         _this.eventClickChk = true;
         _this.transitionIng = true;
-        _this.objectDataValue(e);
 
+        clearTimeout(_this.autoPlaySet);
+
+        _this.objectDataValue(e);
         _this.naviClickValue(_this);
-        // if (_this.eventClickChk === true) {_this.naviClickValue(_this);};
-        
         _this.swiperEndChk(e);
     },
 
@@ -574,6 +580,7 @@ Gswiper.prototype = {
             _this.objectDataValue(e);
             _this.swiperMoveValue(_this);
 
+            _this.autoPlayChk = true;
             if (_this.autoPlayChk) {
                 _this.autoPlayInit(e);
             } else {
