@@ -331,13 +331,13 @@ Gswiper.prototype = {
             .unbind(_this.evtTypeStart).bind(_this.evtTypeStart, _this, function(e){_this.eventDown(e)})
             .unbind(_this.evtTypeMove).bind(_this.evtTypeMove, _this, function(e){_this.eventMove(e)})
             .unbind(_this.evtTypeEnd).bind(_this.evtTypeEnd, _this, function(e){_this.eventUp(e)});
-            
-        if (_this.swiperBtn) {
+
+        if (!_this.eventClickChk) {
             _this.nextBtn.bind('click', _this, function(e){_this.nextBtnClick(e)});
             _this.prevBtn.bind('click', _this, function(e){_this.prevBtnClick(e)});
         }
 
-        if (_this.indicator) {
+        if (!_this.eventClickChk) {
             $(_this.indicatorDot).bind('click', _this, _this.naviClick);
         }
 
@@ -435,9 +435,10 @@ Gswiper.prototype = {
         _this.transitionIng = true;
         _this.objectDataValue(e);
 
-        if (_this.eventClickChk === true) {_this.nextBtnValue(e);}
-
-        _this.eventClickChk = false;
+        _this.nextBtnValue(e);
+        // if (_this.eventClickChk) {_this.nextBtnValue(e);}
+        clearTimeout(_this.autoPlaySet);
+        
         _this.swiperEndChk(e);
     },
 
@@ -453,9 +454,10 @@ Gswiper.prototype = {
         _this.transitionIng = true;
         _this.objectDataValue(e);
         
-        if (_this.eventClickChk === true) {_this.prevBtnValue(e);}
-
-        _this.eventClickChk = false;
+        _this.prevBtnValue(e);
+        // if (_this.eventClickChk) {_this.prevBtnValue(e);}
+        clearTimeout(_this.autoPlaySet);
+        
         _this.swiperEndChk(e);
     },
 
@@ -473,7 +475,8 @@ Gswiper.prototype = {
         _this.transitionIng = true;
         _this.objectDataValue(e);
 
-        if (_this.eventClickChk === true) {_this.naviClickValue(_this);};
+        _this.naviClickValue(_this);
+        // if (_this.eventClickChk === true) {_this.naviClickValue(_this);};
         
         _this.swiperEndChk(e);
     },
@@ -576,6 +579,8 @@ Gswiper.prototype = {
             } else {
                 clearTimeout(_this.autoPlaySet);
             };
+
+            _this.eventClickChk = false;
         });
         
     },
