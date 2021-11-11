@@ -33,7 +33,7 @@
         - 'mergeTarget' 존재하는 경우 서로 다르게 스와이프는 가능하며, button, indicator 클릭 시, 부모의 index의 따라 자식도 동일하게 스와이프 적용
         - autoplay 버그수정 (event : 'mouseenter', 'mouseleave')
         * 2021-11-10
-        - autoplay 시, button & indicator의 영향 안받게 설정
+        - autoPlay 시, button & indicator의 영향 안받게 설정
         - button 중복 클릭 방지
 ***/
 
@@ -85,8 +85,8 @@ function Gswiper (opt) {
     this.swiperWidth = this.swiperItem.width();
     this.swiperHeight = this.swiperItem.height();
 
-    this.prevBtn = $(opt.prevBtn) || this.swiperWrapper.find('.prev-btn');
-    this.nextBtn = $(opt.nextBtn) || this.swiperWrapper.find('.next-btn');
+    this.prevBtn = opt.prevBtn || true;                                                                                                             // prev 버튼 설정
+    this.nextBtn = opt.nextBtn || true;                                                                                                             // next 버튼 설정
     
     this.indicatorDot;
     this.indicatorNum;
@@ -236,8 +236,9 @@ Gswiper.prototype = {
 
     // swipe button set
     swiperBtnSet : function() {
-        this.prevBtn = this.swiperWrapper.find('.prev-btn');
-        this.nextBtn = this.swiperWrapper.find('.next-btn');
+        this.nextBtn = this.nextBtn === true ? this.swiperWrapper.find('.next-btn') : $(this.nextBtn);
+        this.prevBtn = this.prevBtn === true ? this.swiperWrapper.find('.prev-btn') : $(this.prevBtn);
+        
 
         if (this.mergeTarget && this.mergeBtnHidden == 'hidden') {
             this.swiperWrapper.find('.swiper-btn > button').css({'z-index' : -1, 'opacity' : 0});
@@ -579,8 +580,7 @@ Gswiper.prototype = {
             _this.viewIndex = _this.curIndex;
             _this.objectDataValue(e);
             _this.swiperMoveValue(_this);
-
-            _this.autoPlayChk = true;
+            
             if (_this.autoPlayChk) {
                 _this.autoPlayInit(e);
             } else {
