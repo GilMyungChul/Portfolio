@@ -26,15 +26,15 @@
     ====================== ver 1.1 ======================
         * 2021-08-27
         - 일부 소스 변경
-    ====================== ver 1.11 ======================
+    ====================== ver 1.2 ======================
         * 2021-11-08
         - 'mergeTarget' 존재하는 경우 스와이프 오류 수정
         * 2021-11-09
         - 'mergeTarget' 존재하는 경우 서로 다르게 스와이프는 가능하며, button, indicator 클릭 시, 부모의 index의 따라 자식도 동일하게 스와이프 적용
         - autoplay 버그수정 (event : 'mouseenter', 'mouseleave')
         * 2021-11-10
-        - autoplay 시, button, indicator의 영향 안받게 설정
-        - button 중복 클릭 
+        - autoplay 시, button & indicator의 영향 안받게 설정
+        - button 중복 클릭 방지
 ***/
 
 function Gswiper (opt) {
@@ -85,8 +85,8 @@ function Gswiper (opt) {
     this.swiperWidth = this.swiperItem.width();
     this.swiperHeight = this.swiperItem.height();
 
-    this.prevBtn;
-    this.nextBtn;
+    this.prevBtn = $(opt.prevBtn) || this.swiperWrapper.find('.prev-btn');
+    this.nextBtn = $(opt.nextBtn) || this.swiperWrapper.find('.next-btn');
     
     this.indicatorDot;
     this.indicatorNum;
