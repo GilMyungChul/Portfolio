@@ -70,11 +70,11 @@
                     <div class="swiper-list swiper_two">
                         <div class="swiper-item"><span>Slide 01</span></div>
                         <div class="swiper-item"><span>Slide 02</span></div>
-                        <div class="swiper-item" style="height:250px;"><span>Slide 03</span></div>
+                        <div class="swiper-item"><span>Slide 03</span></div>
                         <div class="swiper-item"><span>Slide 04</span></div>
                         <div class="swiper-item"><span>Slide 05</span></div>
                         <div class="swiper-item"><span>Slide 06</span></div>
-                        <div class="swiper-item" style="height:250px;"><span>Slide 07</span></div>
+                        <div class="swiper-item"><span>Slide 07</span></div>
                         <div class="swiper-item"><span>Slide 08</span></div>
                     </div>
                     <div class="swiper-btn">
@@ -174,8 +174,8 @@
                 autoPlay            자동 롤링 : false (default), true
                 autoPlayTime        자동 롤링 타임 : 1000 (default), 설정값
                 
-                nextBtn             다음 스와이프 버튼 : 기본값 (default), 설정값
-                prevBtn             이전 스와이프 버튼 : 기본값 (default), 설정값
+                nextBtn             다음 스와이프 버튼
+                prevBtn             이전 스와이프 버튼
                 
                 autoHeight          스와이프 높이 컨텐츠에 맞게 조정 : false (default), true
                 valueOther          width, height 각 스와이프 오브젝트 마다 다른 경우 : true (default), false
@@ -188,7 +188,7 @@
                 itemView: 4,
                 swiperBtn: true,
                 indicatorType: 'bar',
-                loop: true
+                loop: true,
             });
 
             var swiper_six = new Gswiper({
@@ -201,17 +201,17 @@
                 indicator: true,
                 // mergeDotHidden: 'visible',
                 // mergeBtnHidden: 'visible',
-                mergeTarget: swiper_one
+                mergeTarget: swiper_one,
             });
     
             var swiper_two = new Gswiper({
                 targetName: $('.swiper_two'),
                 viewIndex: 5,
                 swiperWidth: 500,
-                // loop: true,
+                loop: true,
                 autoHeight: true,
                 indicatorType: 'number',
-                useCss: true
+                useCss: true,
                 // nextBtn: '.next',
                 // prevBtn: '.prev',
             });
@@ -220,12 +220,11 @@
                 targetName: $('.swiper_three'),
                 between: 10,
                 itemView: 2,
-                // viewIndex: 2,
-                itemViewSwiper: 2,
+                viewIndex: 2,
                 loop: true,
                 // useCss : true
-                autoPlay: true,
-                autoPlayTime: 2000
+                // autoPlay: true,
+                // autoPlayTime: 2000,
             });
 
             var swiper_four = new Gswiper({
@@ -233,9 +232,12 @@
                 mode: 'vertical',
                 between: 5,
                 viewIndex: 3,
-                loop: true
-                // autoPlay: true,
-                // autoPlayTime: 2000
+                // itemView: 2,
+                loop: true,
+                moveNotChk: false,
+                autoPlay: true,
+                autoPlayTime: 2000,
+                hoverStop: false,
             });
 
             var swiper_five = new Gswiper({
@@ -243,8 +245,9 @@
                 itemView: 3,
                 between: 5,
                 viewIndex: 3,
-                // swiperBtn: true,
-                loop: true
+                // indicatorType: 'bar',
+                // swiperBtn: false,
+                loop: true,
                 // valueOther: true
             });
         </script>
