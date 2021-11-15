@@ -35,6 +35,8 @@
         * 2021-11-10
         - autoPlay 시, button & indicator의 영향 안받게 설정
         - button 중복 클릭 방지
+        * 2021-11-14
+        - touch unabled
 ***/
 
 function Gswiper (opt) {
@@ -53,9 +55,9 @@ function Gswiper (opt) {
     
     this.targetName = opt.targetName;                                                                                                               // swiper target
     this.mode = opt.mode || 'horizontal';                                                                                                           // 모드 : 'horizontal' (default), 'vertical'
-    this.scrolling = opt.scrolling || false;                                                                                                        // 스크롤을 이용한 스와이프 : 'false' (default)
-    this.swiperBtn = opt.swiperBtn == '' ? false : true;                                                                                            // 스와이프 버튼 : 'true' (default), 'false'
-    this.indicator = opt.indicator == '' ? false : true;                                                                                            // 인디케이터 : 'true' (default), 'false'
+    this.scrolling = opt.scrolling || false;                                                                                                        // 스크롤을 이용한 스와이프 : false (default)
+    this.swiperBtn = opt.swiperBtn == '' ? false : true;                                                                                            // 스와이프 버튼 : true (default), false
+    this.indicator = opt.indicator == '' ? false : true;                                                                                            // 인디케이터 : true (default), false
     this.indicatorType = this.indicator === true ? ($.type(opt.indicatorType) == 'undefined' ? 'dot' : opt.indicatorType) : false                   // 인디케이터 종류 : 'dot' (default), 'number', 'bar'
     this.between = opt.between || 0;                                                                                                                // 스와이프 간 간격
     this.viewIndex = opt.viewIndex || 0;                                                                                                            // 스와이프 시작되는 시점 : 0 (default)
@@ -64,8 +66,10 @@ function Gswiper (opt) {
     this.swiperEffect = opt.swiperEffect || 'ease'                                                                                                  // 스와이프 이펙트 : ease (default)
     this.ingSwiperNot = opt.ingSwiperNot || false;                                                                                                  // 스와이프 중 이벤트 막기 : false (default)
     this.itemView = opt.itemView || 1;                                                                                                              // 스와이프 영역에서 한번에 몇개의 스와이프를 노출 할지 결정 : 1 (default)
-    this.itemViewSwiper = this.itemView > 1 ? (opt.itemViewSwiper > this.itemView ? this.itemView : opt.itemViewSwiper) : 1;                        // 노출되는 스와이프가 2개 이상이 경우 스와이프가 되는 개수 결정 : this.itemView (default)
     this.useCss = opt.useCss || false;                                                                                                              // 사용자가 지정된 css값을 사용하게 설정 : false (default)
+
+    this.moveNotChk = opt.moveNotChk == '' ? false : true;                                                                                          // 스와이프 드래그 막기 : true (default) , false
+    this.hoverStop = opt.hoverStop == '' ? false : true;                                                                                            // 'mouseenter'로 autoplay 막기 : true (default) , false
     
     this.mergeTarget = opt.mergeTarget || false;                                                                                                    // 동시 스와이프 : 부모 스와이프
     this.mergeObj;                                                                                                                                  // 동시 스와이프 : 부모 스와이프에 자식 스와이프 데이터값 추가
@@ -209,7 +213,7 @@ Gswiper.prototype = {
 
     // swipe items set
     swiperItemSet : function() {
-        
+
         for (var i = 0; i <= this.swiperLength; i++) {
             this.swiperItem.eq(i).attr('swiper-data', i);
         }
@@ -217,16 +221,14 @@ Gswiper.prototype = {
         // clone for 'loop'
         if (this.loop === true) {
             for (var i = this.itemView; i > 0; i--) {
-                var fIndex = this.itemView - i; 
-                var first = i - (this.itemView + 1);
-                var firstClone = this.swiperItem.not('.clone').eq(fIndex).clone().addClass('clone').attr('swiper-data', first);
+                var fIndex = this.itemView - i;
+                var firstClone = this.swiperItem.not('.clone').eq(fIndex).clone().addClass('clone').removeAttr('swiper-data');
                 firstClone.appendTo(this.targetName);
             }
             
             for (var i = 0; i < this.itemView; i++) {
                 var lIndex = - (i + 1);
-                var last = i + this.swiperLength + 1;
-                var lastClone = this.swiperItem.not('.clone').eq(lIndex).clone().addClass('clone').attr('swiper-data', last);
+                var lastClone = this.swiperItem.not('.clone').eq(lIndex).clone().addClass('clone').removeAttr('swiper-data');
                 lastClone.prependTo(this.targetName);
             }
         }
@@ -251,13 +253,11 @@ Gswiper.prototype = {
 
         // indicator type : dot
         if (this.indicatorType === 'dot') {
+
             for (var i = 0; i <= this.swiperLength - 1; i++) {
                 this.indicatorDot = '<li class="indicator-items" indicator-data="' + i + '">' + (i + 1) + '</li>';
                 this.swiperWrapper.find('.indicator-list').append(this.indicatorDot);
             }
-
-            // 'dot' indicator calss add
-            this.swiperWrapper.find('> .indicator-items').eq(this.viewIndex).addClass('active');
 
             // hide your child`s swipe indicator when using a concurrent swipe
             if (this.mergeTarget && this.mergeDotHidden == 'hidden') {
@@ -267,6 +267,7 @@ Gswiper.prototype = {
 
         // indicator type : number
         else if (this.indicatorType === 'number') {
+
             if (this.mode === 'horizontal') {
                 this.indicatorNum = '<li class="indicator-num"><span class="indicator-cur">' + this.viewIndex + '</span> / <span class="indicator-max">' + this.swiperLength + '</span></li>';
             } else {
@@ -278,12 +279,11 @@ Gswiper.prototype = {
 
         // indicator type : bar
         else if(this.indicatorType === 'bar') {
-            this.viewIndex = this.viewIndex > 0 ? this.viewIndex : 1;
             
             if (this.mode === 'horizontal') {
-                this.indicatorBar = '<li class="indicator-bar" style="width:' + (100 / this.swiperLength * this.viewIndex) + '%">' + this.viewIndex + '</li>';
+                this.indicatorBar = '<li class="indicator-bar" style="width:' + (100 / this.swiperLength * (this.itemView + 1)) + '%">' + (this.itemView + 1) + '</li>';
             } else {
-                this.indicatorBar = '<li class="indicator-bar" style="height:' + (100 / this.swiperLength * this.viewIndex) + '%">' + this.viewIndex + '</li>';
+                this.indicatorBar = '<li class="indicator-bar" style="height:' + (100 / this.swiperLength * (this.itemView + 1)) + '%">' + (this.itemView + 1) + '</li>';
             }
 
             this.swiperWrapper.find('.indicator-list').addClass('bar-list');
@@ -335,18 +335,20 @@ Gswiper.prototype = {
             .unbind(_this.evtTypeStart).bind(_this.evtTypeStart, _this, function(e){_this.eventDown(e)})
             .unbind(_this.evtTypeMove).bind(_this.evtTypeMove, _this, function(e){_this.eventMove(e)})
             .unbind(_this.evtTypeEnd).bind(_this.evtTypeEnd, _this, function(e){_this.eventUp(e)});
-            
-        _this.nextBtn.bind('click', _this, function(e){
-            _this.autoPlayChk = false;
-            clearTimeout(_this.autoPlaySet);
-            if (!_this.eventClickChk) { _this.nextBtnClick(e); }
-        });
-
-        _this.prevBtn.bind('click', _this, function(e){
-            _this.autoPlayChk = false;
-            clearTimeout(_this.autoPlaySet);
-            if (!_this.eventClickChk) { _this.prevBtnClick(e); }
-        });
+        
+        if (_this.swiperBtn) {
+            _this.nextBtn.bind('click', _this, function(e){
+                _this.autoPlayChk = false;
+                clearTimeout(_this.autoPlaySet);
+                if (!_this.eventClickChk) { _this.nextBtnClick(e); }
+            });
+    
+            _this.prevBtn.bind('click', _this, function(e){
+                _this.autoPlayChk = false;
+                clearTimeout(_this.autoPlaySet);
+                if (!_this.eventClickChk) { _this.prevBtnClick(e); }
+            });
+        }
         
         $(_this.indicatorDot).bind('click', _this, function(e){
             _this.autoPlayChk = false;
@@ -422,7 +424,13 @@ Gswiper.prototype = {
     // mousemove, touchmove
     eventMove : function(e) {
         var _this = e.data;
-        if (_this.eventMoveChk === true) { _this.pageDragValue(e); }
+        if (_this.eventMoveChk === true) {
+            if (!_this.moveNotChk) {
+                e.preventDefault();
+            } else {
+                _this.pageDragValue(e);
+            }
+        }
     },
 
     // mouseup, touchend
@@ -492,8 +500,8 @@ Gswiper.prototype = {
     objectDataValue : function(e) {
         var _this = e.data;
 
-        _this.curX = _this.targetName[0].offsetLeft;
-        _this.curY = _this.targetName[0].offsetTop;
+        _this.curX = $(_this.targetName).position().left;                                                // Number(_this.targetName[0].style.left.replace(/px/g, ''))
+        _this.curY = $(_this.targetName).position().top;                                                 // Number(_this.targetName[0].style.top.replace(/px/g, ''))
         _this.curXY = _this.mode === 'horizontal' ? _this.curX : _this.curY;
 
         _this.prevIndex = _this.viewIndex - 1;
@@ -537,8 +545,7 @@ Gswiper.prototype = {
             $(_this.targetName).unbind("transitionend webkitTransitionEnd");
             
             if (_this.loop === true) {
-                // var _itemView = _this.itemView > 1 ? parseInt(_this.itemView / 2) : _this.itemView;
-                var _cloneLength = _this.itemView > 1 ? _this.cloneLength / 2 : _this.cloneLength
+                var _cloneLength = _this.cloneLength / 2;
                 
                 if (_this.curIndex == -1) {
                     _this.moveXY = - _this.swiperWH * (_this.lastIndex + _cloneLength) - 2 * _this.between * (_this.lastIndex + _cloneLength) - _this.between;
@@ -558,13 +565,15 @@ Gswiper.prototype = {
             };
 
             if (_this.autoPlay) {
-                $(_this.targetName)
+                if (_this.hoverStop) {
+                    $(_this.targetName)
                     .bind('mouseenter', function(e){ _this.autoPlayChk = false; })
                     .bind('mouseleave', function(e){ 
                         _this.autoPlayChk = true;
                         clearTimeout(_this.autoPlaySet);
                         _this.autoPlayInit(e);
                     });
+                }
             }
             
             if (!_this.loop && _this.autoPlay) {
@@ -673,7 +682,7 @@ Gswiper.prototype = {
         } else {
             var _this = e.data;
         }
-        
+
         _this.moveXY = _this.curXY - _this.swiperWH - (_this.between * 2);
         _this.curIndex = _this.nextIndex;
         _this.transition_Duration = _this.swiperSpeed;
@@ -732,9 +741,11 @@ Gswiper.prototype = {
     naviClickValue : function(e) {
         var _this = e;
         var _cloneLength = _this.loop === true ? _this.cloneLength / 2 : 0;
+
+        var _curNavi = _this.itemViewSwiper > 1 ? _this.curNavi * _this.itemViewSwiper : _this.curNavi
         
         // var _valueAdd = _valueArray.reduce((a , b) => a + b);                                     // 배열 안 객체 합계
-        _this.moveXY = - _this.swiperWH * (_this.curNavi + _cloneLength) - _this.between * ( (2 * _this.curNavi) + (2 * _cloneLength) + 1 );
+        _this.moveXY = - _this.swiperWH * (_curNavi + _cloneLength) - _this.between * ( (2 * _curNavi) + (2 * _cloneLength) + 1 );
 
         _this.transition_Duration = _this.swiperSpeed;
         _this.curIndex = _this.curNavi;
