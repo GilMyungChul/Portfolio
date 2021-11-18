@@ -17,13 +17,16 @@
 .swiper-btn .btn.next-btn{right:0px;}
 
 .indicator-list{display:flex;justify-content:center;align-items:center;width:100%;position:absolute;bottom:10px;user-select:none;}
-.indicator-list.bar-list{justify-content:left;}
+.indicator-list.progress-list{justify-content:left;}
 .indicator-list .indicator-items{width:6px;height:6px;border-radius:3px;float:left;margin:0 4px;background:#007aff;font-size:1px;text-indent:-99999px;overflow:hidden;cursor:pointer;opacity:0.2}
 .indicator-list .indicator-items.active{opacity:1;}
 .indicator-list .indicator-num{font-size:15px;font-weight:bold;}
 .indicator-list .indicator-num .indicator-cur{color:#007aff;}
-.indicator-list.bar-list{width:100%;height:5px;background:#98caff;border-radius:10px;bottom:-10px;}
-.indicator-list.bar-list li{float:left;height:5px;font-size:1px;text-indent:-9999em;border-radius:10px;background:#007aff;}
+.indicator-list.progress-list,
+.indicator-list.scrollbar-list{width:100%;height:5px;background:#98caff;border-radius:10px;bottom:-10px;}
+.indicator-list.progress-list li{float:left;height:5px;font-size:1px;text-indent:-9999em;border-radius:10px;background:#007aff;}
+.indicator-list.scrollbar-list li{float:left;height:5px;font-size:1px;text-indent:-9999em;border-radius:10px;background:#007aff;position:absolute;top:0;}
+
 
 
 /* vertical */
