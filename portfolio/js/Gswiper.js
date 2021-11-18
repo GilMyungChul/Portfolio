@@ -35,8 +35,6 @@
         * 2021-11-10
         - autoPlay 시, button & indicator의 영향 안받게 설정
         - button 중복 클릭 방지
-        * 2021-11-14
-        - touch unabled
 ***/
 
 function Gswiper (opt) {
@@ -58,7 +56,7 @@ function Gswiper (opt) {
     this.scrolling = opt.scrolling || false;                                                                                                        // 스크롤을 이용한 스와이프 : false (default)
     this.swiperBtn = opt.swiperBtn == '' ? false : true;                                                                                            // 스와이프 버튼 : true (default), false
     this.indicator = opt.indicator == '' ? false : true;                                                                                            // 인디케이터 : true (default), false
-    this.indicatorType = this.indicator === true ? ($.type(opt.indicatorType) == 'undefined' ? 'dot' : opt.indicatorType) : false                   // 인디케이터 종류 : 'dot' (default), 'number', 'bar'
+    this.indicatorType = this.indicator === true ? ($.type(opt.indicatorType) == 'undefined' ? 'dot' : opt.indicatorType) : false                   // 인디케이터 종류 : 'dot' (default), 'number', 'progress', 'scrollbar'
     this.between = opt.between || 0;                                                                                                                // 스와이프 간 간격
     this.viewIndex = opt.viewIndex || 0;                                                                                                            // 스와이프 시작되는 시점 : 0 (default)
     this.loop = opt.loop || false;                                                                                                                  // 무한 스와이프 : false (default)
@@ -94,7 +92,8 @@ function Gswiper (opt) {
     
     this.indicatorDot;
     this.indicatorNum;
-    this.indicatorBar;
+    this.indicatorProgress;
+    this.indicatorScrollbar;
     
     this.pageX;
     this.pageY;
@@ -277,22 +276,36 @@ Gswiper.prototype = {
             this.swiperWrapper.find('.indicator-list').append(this.indicatorNum);
         }
 
-        // indicator type : bar
-        else if(this.indicatorType === 'bar') {
+        // indicator type : progress
+        else if(this.indicatorType === 'progress') {
             
             if (this.mode === 'horizontal') {
-                this.indicatorBar = '<li class="indicator-bar" style="width:' + (100 / this.swiperLength * (this.itemView + 1)) + '%">' + (this.itemView + 1) + '</li>';
+                this.indicatorProgress = '<li class="indicator-progress" style="width:' + (100 / this.swiperLength * (this.itemView + 1)) + '%">' + (this.itemView + 1) + '</li>';
             } else {
-                this.indicatorBar = '<li class="indicator-bar" style="height:' + (100 / this.swiperLength * (this.itemView + 1)) + '%">' + (this.itemView + 1) + '</li>';
+                this.indicatorProgress = '<li class="indicator-progress" style="height:' + (100 / this.swiperLength * (this.itemView + 1)) + '%">' + (this.itemView + 1) + '</li>';
             }
 
-            this.swiperWrapper.find('.indicator-list').addClass('bar-list');
-            this.targetName.parents('.swiper-wrap').find('.indicator-list.bar-list').append(this.indicatorBar);
+            this.swiperWrapper.find('.indicator-list').addClass('progress-list');
+            this.targetName.parents('.swiper-wrap').find('.indicator-list.progress-list').append(this.indicatorProgress);
         }
 
+        // indicator type : scrollbar
+        else if(this.indicatorType === 'scrollbar') {
+
+            if (this.mode === 'horizontal') {
+                this.indicatorScrollbar = '<li class="indicator-scrollbar" style="width:' + 100 / this.swiperLength + '%;left:' + (100 / this.swiperLength) * this.itemView + '%;"></li>'
+            } else {
+                this.indicatorScrollbar = '<li class="indicator-scrollbar" style="height:' + 100 / this.swiperLength + '%;top:' + (100 / this.swiperLength) * this.itemView + '%;"></li>'
+            }
+
+            this.swiperWrapper.find('.indicator-list').addClass('scrollbar-list');
+            this.targetName.parents('.swiper-wrap').find('.indicator-list.scrollbar-list').append(this.indicatorScrollbar);
+        }
+        
         this.indicatorDot = this.swiperWrapper.find('.indicator-items');
         this.indicatorNum = this.swiperWrapper.find('.indicator-num');
-        this.indicatorBar = this.swiperWrapper.find('.indicator-bar');
+        this.indicatorProgress = this.swiperWrapper.find('.indicator-progress');
+        this.indicatorScrollbar = this.swiperWrapper.find('.indicator-scrollbar');
     },
 
     // mode set
@@ -793,21 +806,31 @@ Gswiper.prototype = {
             $(_this.indicatorNum).find('.indicator-cur').html(_locIndex + 1);
 
         } 
-        // 'bar' value
-        else if (_this.indicatorType === 'bar') {
-            
-            $(_this.indicatorBar)[0].style.transitionDuration = _this.transition_Duration;
+        // 'progress' value
+        else if (_this.indicatorType === 'progress') {
+            $(_this.indicatorProgress)[0].style.transitionDuration = _this.transition_Duration;
 
             // 'horizontal' , 'vertical'
             if (_this.mode === 'horizontal') {
-                $(_this.indicatorBar)[0].style.transitionProperty = 'width';
-                $(_this.indicatorBar)[0].style.width = 100 / _this.swiperLength * (_locIndex + 1) + '%';
+                $(_this.indicatorProgress)[0].style.transitionProperty = 'width';
+                $(_this.indicatorProgress)[0].style.width = 100 / _this.swiperLength * (_locIndex + 1) + '%';
             } else {
-                $(_this.indicatorBar)[0].style.transitionProperty = 'height';
-                $(_this.indicatorBar)[0].style.height = 100 / _this.swiperLength * (_locIndex + 1) + '%';
+                $(_this.indicatorProgress)[0].style.transitionProperty = 'height';
+                $(_this.indicatorProgress)[0].style.height = 100 / _this.swiperLength * (_locIndex + 1) + '%';
             }
             
-        };
+        }
+        // 'scrollbar' value
+        else if (_this.indicatorType === 'scrollbar') {
+            $(_this.indicatorScrollbar)[0].style.transitionDuration = _this.transition_Duration;
+
+            // 'horizontal' , 'vertical'
+            if (_this.mode === 'horizontal') {
+                $(_this.indicatorScrollbar)[0].style.left = 100 / _this.swiperLength * _locIndex + '%';
+            } else {
+                $(_this.indicatorScrollbar)[0].style.top = 100 / _this.swiperLength * _locIndex + '%';
+            }
+        }
 
         _this.viewIndex = _this.curIndex;
     }
